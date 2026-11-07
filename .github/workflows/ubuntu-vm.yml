@@ -52,7 +52,8 @@ jobs:
           npm --prefix e2e ci
           npx --prefix e2e playwright install chromium
       - name: First run, login, and one catalog app install
-        run: npx --prefix e2e playwright test
+        working-directory: e2e
+        run: npx playwright test
       - name: Post-check
         if: always()
         run: |
