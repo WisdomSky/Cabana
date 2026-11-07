@@ -44,6 +44,60 @@ async function waitForHttp(url, timeoutMs = 60_000) {
   throw lastError || new Error(`Timed out waiting for ${url}`);
 }
 
+test('real Docker volume failures are surfaced with the underlying error', { skip: !enabled }, async (t) => {
+  const root = dockerTestRoot();
+  const dataDir = path.join(root, 'DATA');
+  fs.mkdirSync(dataDir, { recursive: true });
+  const db = openDatabase(path.join(root, 'test.db'));
+  const settings = new SettingsService({ db, dataDir });
+  const docker = new DockerService({ logger: silence });
+  const store = {
+    getIndex: async () => ({ apps: [] }),
+    getApp: async () => {
+      throw new Error('not used');
+    },
+    getCompose: async () => {
+      throw new Error('not used');
+    },
+  };
+  const config = { dataDir, appsDir: path.join(root, 'apps'), version: 'test' };
+  const apps = new AppService({ db, docker, store, settings, config, logger: silence });
+  const appId = `ci-badvolume-${Date.now().toString(36)}`;
+  t.after(async () => {
+    await docker.runner('docker', ['volume', 'rm', '-f', `cabana_${appId}_broken`], { timeout: 30_000 }).catch(() => {});
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  const info = await docker.info();
+  if (!info.available) {
+    t.skip('Docker is not available');
+    return;
+  }
+  const compose = `services:
+  bad:
+    image: busybox:1
+    command: ["true"]
+    volumes:
+      - broken:/data
+volumes:
+  broken:
+    driver_opts:
+      type: none
+      device: /this/path/definitely/does/not/exist
+      o: bind
+`;
+  await assert.rejects(
+    () => apps.installCustom({ compose, title: 'Broken Volume', id: appId }),
+    (error) => {
+      assert.equal(error.status, 502);
+      assert.match(error.message, /Docker Compose failed/i);
+      assert.match(`${error.message}\n${error.details?.output || ''}`, /mount|volume|no such file|invalid/i);
+      return true;
+    },
+  );
+  assert.equal(db.prepare('SELECT id FROM apps WHERE id = ?').get(appId), undefined);
+});
+
 test('real Docker lifecycle: custom Compose install, HTTP, stop/start, uninstall preserving data', { skip: !enabled }, async (t) => {
   const root = dockerTestRoot();
   const dataDir = path.join(root, 'DATA');

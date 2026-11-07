@@ -1,51 +1,140 @@
 # Cabana
 
 An independent, CasaOS-style personal cloud server for home Linux machines. Cabana gives
-you a dashboard for the host, a catalog of self-hosted apps sourced from the official
-CasaOS/ZimaOS app store, a small Docker app manager, a confined file browser, and honest
-storage reporting. It is built from scratch and is not affiliated with CasaOS or ZimaOS.
-
-> Work in progress. The final evidence, screenshots, and limitations are recorded in
-> `VERIFICATION.md` before the v1.0.0 release.
-
-## Install
+you a real host dashboard, a catalog of self-hosted apps sourced from the official
+CasaOS/ZimaOS app store, a Docker app manager, a confined file browser, storage reporting,
+and a first-run administrator flow — built from scratch and not affiliated with CasaOS or
+ZimaOS.
 
 ```bash
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo bash
 ```
 
-Port 80 is the default. If it is busy:
+Open the printed LAN URL, create the sole administrator account, and install your first app.
+There are no default credentials.
+
+## What you get
+
+- **Dashboard** with real CPU, memory, disk, network, Docker, and app status.
+- **App store** backed by the official published CasaOS/ZimaOS v2 index, with search,
+  categories, architecture filtering, relative compose/meta/asset resolution, and caching.
+- **One-click app lifecycle**: install, start, stop, and uninstall store apps. Docker state
+  is reconciled against Cabana's records. Port, container-name, volume, and Docker errors
+  are surfaced in the UI.
+- **CasaOS compose contract**: `x-casaos`, `$AppID`/`$PUID`/`$PGID`/`$TZ` substitution,
+  `/DATA` app paths, and architecture-specific `docker-compose.<arch>.yml` variants.
+- **Data safety**: uninstalling keeps app data unless you explicitly tick the delete-data
+  confirmation. Named volumes are only removed with that explicit confirmation.
+- **Custom Compose import**, including automatic analysis. Privileged, host-network, device,
+  capability, and Docker-socket requests require an explicit checkbox before install.
+- **File manager** confined to configured roots (default `/DATA`) with browse, upload,
+  download, mkdir, rename, and delete, plus path-traversal and symlink-escape protection.
+- **Storage overview** from real host filesystem statistics. Cabana never mounts, formats,
+  or partitions disks.
+- **Settings** for the administrator password, PUID/PGID/timezone, file roots, and store
+  refresh.
+
+## Supported systems
+
+The installer supports **Debian 12 (bookworm)** and **Ubuntu 24.04 LTS (noble)** on
+**amd64** and **arm64**, with systemd. Other systems and architectures are refused before
+changes are made.
+
+The installer must run as root. It:
+
+- installs Docker Engine and the Compose plugin only when compatible versions are missing,
+  and reuses a working existing Docker installation;
+- installs a supported Node.js LTS (26.x) only when a compatible Node.js is missing;
+- downloads the published release bundle and verifies its SHA-256 checksum;
+- installs Cabana as an enabled systemd service on port 80;
+- keeps state in `/var/lib/cabana` and app data in `/DATA`;
+- is safely rerunnable and preserves the administrator account, files, and app data;
+- performs no partitioning, formatting, or mounting.
+
+Port 80 conflict or port override:
 
 ```bash
+# If 80 is already in use, the installer names the process and refuses to change anything.
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo CABANA_PORT=8080 bash
 ```
 
-Supported systems: Debian 12 and Ubuntu 24.04 on amd64 or arm64, with systemd.
-The installer refuses other systems, installs Docker Engine + Compose and a supported
-Node.js LTS when missing, reuses compatible existing installs, verifies published release
-artifacts, installs Cabana as an enabled systemd service, and prints the LAN URL. It does
-not partition, format, or mount disks.
+Useful commands on the server:
 
-- State: `/var/lib/cabana`
-- App data: `/DATA`
-- Service: `systemctl status cabana`
-- Logs: `journalctl -u cabana -f`
+```bash
+systemctl status cabana
+journalctl -u cabana -f
+```
 
-Open the printed LAN URL to create the sole administrator account. There are no default
-credentials. Re-running the installer is safe and preserves the account, files, and app data.
+## Evidence
+
+Full commands, environment versions, timestamps, and outcomes are in
+[`VERIFICATION.md`](VERIFICATION.md).
+
+- Automated backend suite: **36 tests** — setup/auth, sessions/CSRF, store parsing and
+  compose translation, file confinement, app lifecycle, settings, plus two real-Docker
+  integration tests (lifecycle and volume-failure surfacing).
+- Playwright E2E: **6 scenarios** covering first-run, login/logout, dashboard data, storage,
+  store search/category/architecture filtering, install/start/stop/uninstall with data
+  preservation and explicit deletion, custom Compose import, privileged confirmation, file
+  operations, settings, and desktop/narrow screenshots.
+- Clean-VM matrix: Debian 12 and Ubuntu 24.04 on amd64 and arm64. Debian 12 arm64 runs the
+  full suite, a real reboot, and an idempotent second install with data hashes unchanged.
+  Ubuntu 24.04 amd64/arm64 run the exact public one-liner on GitHub-hosted clean VMs;
+  Debian 12 amd64 runs the same one-liner followed by setup, login, and a store app install.
+- Sampled official-store installs: Uptime Kuma 2.4.0, Gitea 1.26.2, and multi-service
+  Immich 2.7.2 (server, machine learning, PostgreSQL, Redis). All containers were healthy
+  or running and the app URLs returned successful responses.
+- Installer safety: busy-port refusal with process identification, documented override,
+  unsupported Fedora refusal, non-root refusal, safe rerun, and rollback path.
+
+Screenshots: [`docs/screenshots`](docs/screenshots).
+
+## Security model
+
+- Sole administrator, created on first run; setup permanently closes afterwards.
+- Passwords hashed with scrypt and per-user random salts.
+- Random session tokens stored only as SHA-256 hashes; session cookie is HttpOnly,
+  SameSite=Lax, and `Secure` when configured for TLS.
+- Every authenticated state-changing request requires a per-session CSRF token and a
+  same-origin check.
+- Docker access is server-side only; the browser never receives a Docker socket or API.
+- File paths are confined to configured roots; traversal and symlinks resolving outside a
+  root are refused.
+- Custom Compose files requesting privileged mode, host networking/PID/IPC, devices,
+  capabilities, sensitive mounts, or the Docker socket require explicit confirmation.
+- Passwords, session tokens, and CSRF tokens are never written to logs.
+
+Cabana is intended for a trusted home LAN. TLS, remote access, and multi-user roles are out
+of scope for v1.
+
+## Limitations (v1)
+
+- No TLS termination, remote-access tunnel, or authentication proxy.
+- Single administrator; no multi-user accounts or roles.
+- No disk mounting, partitioning, formatting, or SMB sharing.
+- No backup/restore, snapshot, or app-upgrade tooling.
+- No third-party/app-store management.
+- No Cabana uninstall or upgrade command beyond safely rerunning the installer.
+- Custom Compose images and definitions are not vetted by Cabana. File management and the
+  service run with root privileges so Cabana can manage root-owned app data and Docker.
+- App URLs point directly at published host ports; the host firewall must allow them.
 
 ## Development
 
-Requirements: Node.js 24+ and Docker (for the Docker-backed parts).
+Requirements: Node.js 24+ and Docker for the Docker-backed tests and runtime features.
 
 ```bash
 npm run setup
 npm --prefix server test
+CABANA_REAL_DOCKER=1 node --test server/test/docker.integration.test.js
 npm --prefix web run build
-npm --prefix server run build
+bash scripts/build-release.sh
+npm --prefix e2e install
+npm --prefix e2e exec playwright install chromium
 ```
 
-Run the backend locally against a development data directory:
+Run the backend locally against disposable state (use a Docker-shared host path for the
+data directory so bind mounts resolve):
 
 ```bash
 CABANA_STATE_DIR=/tmp/cabana-state \
@@ -55,40 +144,20 @@ CABANA_PORT=8080 \
 node server/src/start.js
 ```
 
-For local development where Docker runs in a Linux VM (OrbStack or Docker Desktop), set
-`CABANA_DATA_DIR` to a host path shared with Docker so bind mounts resolve.
-
-Build release artifacts:
+End-to-end tests start their own disposable server unless `CABANA_E2E_BASE_URL` is set:
 
 ```bash
-bash scripts/build-release.sh
+npm --prefix e2e test
+CABANA_E2E_BASE_URL=http://127.0.0.1 npm --prefix e2e test -- --grep @persistence
 ```
-
-## Architecture
-
-- Backend: Node.js 24+ / Express 4 / built-in `node:sqlite` (SQLite)
-- Frontend: Vue 3 / Vue Router / Tailwind CSS 4 / Vite
-- Apps: Docker Compose projects managed with the Docker CLI (never exposed to the browser)
-- App catalog: https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@gh-pages/index.json
-
-## Security model
-
-- The installer is root-only and performs no disk partitioning, formatting, or mounting.
-- The sole administrator is created on first run; setup is permanently closed afterwards.
-- Passwords are hashed with scrypt and a random salt.
-- Sessions use random HttpOnly, SameSite=Lax cookies; only a SHA-256 hash of each token is stored.
-- Every authenticated state-changing API call requires a per-session CSRF token and a same-origin check.
-- The file manager confines all operations to configured roots and checks symlinks against escape.
-- Docker access stays server-side. Custom Compose definitions requesting privileged or host
-  networking require explicit confirmation.
-- TLS, remote access, multi-user access, backups, app upgrades, and disk/SMB management are out of scope for v1.
 
 ## Credits
 
 App definitions, icons, screenshots, and catalog metadata come from the
 [official CasaOS/ZimaOS App Store](https://github.com/IceWhaleTech/CasaOS-AppStore).
-Cabana is not affiliated with or endorsed by CasaOS or ZimaOS. See `NOTICE`.
+Cabana is an independent project and is not affiliated with, endorsed by, or sponsored by
+CasaOS or ZimaOS. See [`NOTICE`](NOTICE).
 
 ## License
 
-MIT
+MIT. See [`LICENSE`](LICENSE).
