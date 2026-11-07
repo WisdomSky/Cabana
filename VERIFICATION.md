@@ -1,23 +1,24 @@
 # Cabana verification
 
 This document records the exact environments, commands, versions, timestamps, and outcomes
-used for Cabana v1.0.1 (with v1.0.0 evidence retained where noted). Anything not run is explicitly marked as not run; a partial run is
-never reported as passed.
+used for Cabana v1.0.1. v1.0.1 is a security-maintenance patch for v1.0.0 (updated
+Express, Multer, and YAML dependencies; no API changes). Anything not run is explicitly
+marked as not run; a partial run is never reported as passed.
 
 ## Status summary
 
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Backend unit/integration tests | **Pass** | 36 tests; 34 pass + 2 real-Docker tests pass separately |
-| Playwright E2E (all required flows) | **Pass** | 6/6 on a fresh Debian 12 arm64 QEMU VM, v1.0.0 |
-| Debian 12 arm64 clean VM: installer + full suite + reboot + second install | **Pass** | QEMU 16G VM, own kernel, final v1.0.0 |
-| Debian 12 amd64 clean VM: installer + setup/login + store app | **Pass** | QEMU 14G VM, final v1.0.0 |
-| Ubuntu 24.04 amd64 clean VM: installer + setup/login + store app | **Pass** | GitHub-hosted VM run 42361353350, final v1.0.0 |
-| Ubuntu 24.04 arm64 clean VM: installer + setup/login + store app | **Pass** | GitHub-hosted VM run 42361353350, final v1.0.0 |
+| Playwright E2E (all required flows) | **Pass** | 6/6 on a fresh Debian 12 arm64 QEMU VM, v1.0.1 |
+| Debian 12 arm64 clean VM: installer + full suite + reboot + second install | **Pass** | QEMU 16G VM, own kernel, final v1.0.1 |
+| Debian 12 amd64 clean VM: installer + setup/login + store app | **Pass** | QEMU 14G VM, final v1.0.1 |
+| Ubuntu 24.04 amd64 clean VM: installer + setup/login + store app | **Pass** | GitHub-hosted VM run 42363907636, final v1.0.1 |
+| Ubuntu 24.04 arm64 clean VM: installer + setup/login + store app | **Pass** | GitHub-hosted VM run 42363907636, final v1.0.1 |
 | Sampled store installs | **Pass** | Uptime Kuma, Gitea, multi-service Immich; URLs and health below |
 | Installer port conflict + override | **Pass** | Busy-port refusal and 8080 override on Debian 12 amd64 |
 | Unsupported OS and non-root refusal | **Pass** | Fedora 42 container and Debian non-root run |
-| Tagged public release with artifacts | **Pass** | v1.0.0 release and checksum below |
+| Tagged public release with artifacts | **Pass** | v1.0.1 release and checksum below |
 
 No required check was skipped. No required target or test failed at completion.
 
@@ -25,7 +26,7 @@ No required check was skipped. No required target or test failed at completion.
 
 | Component | Version / detail |
 | --- | --- |
-| Cabana | 1.0.0 |
+| Cabana | 1.0.1 |
 | Local test host | macOS 27.0 (Apple M3 Pro, arm64), Node.js v26.10.0, npm 11.19.1 |
 | Local Docker | Docker 29.8.2, Compose v5.5.0 (OrbStack Linux engine) |
 | True-VM hypervisor | QEMU 11.1.3 with HVF (arm64) and TCG (amd64) |
@@ -42,7 +43,7 @@ No required check was skipped. No required target or test failed at completion.
 
 ### 1.1 Backend suite
 
-Command, run 2026-11-07T09:21:41Z on the local macOS host with Node.js v26.10.0:
+Command, final dependency set, run 2026-11-07T10:15Z on the local macOS host with Node.js v26.10.0:
 
 ```bash
 cd /Users/macbook/Code/cabana/server
@@ -65,7 +66,7 @@ The two skipped tests are the real-Docker integration tests when
 CABANA_REAL_DOCKER=1 node --test test/docker.integration.test.js
 ```
 
-Outcome, 2026-11-07T09:21Z:
+Outcome, 2026-11-07T10:15Z:
 
 ```text
 ✔ real Docker volume failures are surfaced with the underlying error
@@ -103,8 +104,8 @@ Coverage points:
 
 CI: `.github/workflows/ci.yml` runs the server tests on Node 24 and Node 26 and runs the
 real-Docker lifecycle/volume tests on Ubuntu 24.04. Final CI run
-[42359576822](https://github.com/WisdomSky/Cabana/actions/runs/42359576822) passed on
-2026-11-07T09:24Z.
+[42363228833](https://github.com/WisdomSky/Cabana/actions/runs/42363228833) passed on
+2026-11-07T10:16Z.
 
 ### 1.2 Playwright E2E
 
@@ -119,14 +120,14 @@ npx playwright test
 
 Outcome, 2026-11-07T08:42Z: 6/6 passed in 29.5s.
 
-Final v1.0.0 command against the fresh Debian 12 arm64 QEMU VM (server started from the
+Final v1.0.1 command against the fresh Debian 12 arm64 QEMU VM (server started from the
 public installer, not from the repository):
 
 ```bash
 CABANA_E2E_BASE_URL=http://127.0.0.1:8080 npx playwright test
 ```
 
-Outcome, 2026-11-07T09:45:13–09:46:05Z: 6/6 passed in 53.0s. Log: `/tmp/final-e2e-v1.log`.
+Outcome, 2026-11-07T10:18:39–10:22:07Z: 6/6 passed in 53.7s. Log: `/tmp/v101-e2e-arm.log`.
 
 Scenarios:
 
@@ -171,7 +172,7 @@ sudo env PATH=/opt/cabana/node/bin:/usr/bin:/bin CABANA_REAL_DOCKER=1 \
   node --test test/docker.integration.test.js
 ```
 
-Outcome, 2026-11-07T09:58–09:59Z:
+Outcome, 2026-11-07T10:23Z:
 
 ```text
 ℹ tests 36
@@ -191,18 +192,18 @@ Outcome, 2026-11-07T09:58–09:59Z:
 The first run skipped the real-Docker tests because the unprivileged test user could not
 open the Docker socket; they were then run as root, matching the production Cabana service,
 and both passed against the VM's Docker 29.9.3. Logs:
-`/tmp/final-vm-backend-tests.txt` and `/tmp/final-vm-docker-tests.txt`.
+`/tmp/v101-vm-backend-tests.txt`.
 
 ## 2. Clean-VM installer runs
 
-### 2.1 Debian 12 arm64 — primary target (final v1.0.0)
+### 2.1 Debian 12 arm64 — primary target (final v1.0.1)
 
 Hypervisor: QEMU 11.1.3, `-machine virt,accel=hvf -cpu host`, 4 vCPU / 4 GB / 16 GB,
 Debian 12 genericcloud arm64 image, cloud-init user `cabana` with passwordless sudo.
 This is a true VM with its own kernel (`6.1.0-54-cloud-arm64`) and reboot cycle. The final
 overlay was created fresh from the untouched cloud base image for this run.
 
-Exact public command at 2026-11-07T09:43:27Z:
+Exact public command at 2026-11-07T10:17:46Z:
 
 ```bash
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo bash
@@ -212,47 +213,47 @@ Outcome: exit 0; Docker installed from Docker's repository; Node v26.13.0 instal
 verified; service enabled and active on port 80.
 
 ```text
-Cabana: Bundle 1.0.0 verified.
+Cabana: Bundle 1.0.1 verified.
 Cabana: Installing application files and the systemd unit.
 Created symlink /etc/systemd/system/multi-user.target.wants/cabana.service → /etc/systemd/system/cabana.service.
   Open from your LAN:  http://10.0.2.15/
 ```
 
-Health at 2026-11-07T09:44:48Z:
-`{"status":"ok","version":"1.0.0","needsSetup":true,"arch":"arm64","docker":{"available":true,"version":"29.9.3"}}`.
+Health at 2026-11-07T10:18:38Z:
+`{"status":"ok","version":"1.0.1","needsSetup":true,"arch":"arm64","docker":{"available":true,"version":"29.9.3"}}`.
 
 The printed address is the QEMU user-mode guest address; the host reached the service
 through `hostfwd tcp:127.0.0.1:8080-:80`. On real hardware the installer prints the LAN
 address (observed `192.168.139.75` in a supplemental isolated-machine run).
 
-Full E2E: 6/6 passed at 09:46:05Z.
+Full E2E: 6/6 passed at 10:22:07Z.
 
-Reboot test at 09:46:16Z:
+Reboot test at 10:22:17Z:
 
 ```text
-BOOT_ID_BEFORE=59d8cc79-78ca-4fd3-bc70-6500a723f515
-BOOT_ID_AFTER=e43cb76d-bbba-43c4-a689-350624d448fd
+BOOT_ID_BEFORE=f520fdc8-7681-4795-b911-cfcb2b62f21c
+BOOT_ID_AFTER=c651e426-3186-4ac3-8e84-a2110d8999b9
 uptime after reboot: up 0 minutes
 systemctl is-active cabana docker: active / active
 cabana_echo-test-echo: Up
 ```
 
-`06-persistence` passed after reboot at 09:46:32Z.
+`06-persistence` passed after reboot at 10:22:34Z.
 
-Idempotent second install, 2026-11-07T09:46:43Z:
+Idempotent second install, 2026-11-07T10:22:44Z:
 
 ```bash
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo bash
 ```
 
 Outcome: exit 0; installer recognized its own service on port 80, reused Docker and Node,
-verified bundle 1.0.0, reinstalled code, and preserved state.
+verified bundle 1.0.1, reinstalled code, and preserved state.
 
 ```text
 Cabana: Port 80 is already served by the installed Cabana service; continuing with a safe rerun.
 Cabana: Reusing the existing Docker Engine and Compose plugin.
 Cabana: Reusing Cabana's existing Node.js v26.13.0.
-Cabana: Bundle 1.0.0 verified.
+Cabana: Bundle 1.0.1 verified.
 ```
 
 Before/after SHA-256, unchanged:
@@ -263,22 +264,22 @@ Before/after SHA-256, unchanged:
 ```
 
 Admin login (same password) and `@persistence` passed again after the rerun; health reported
-`needsSetup:false`. An earlier v1.0.0-rc.1 run on another isolated Debian 12 arm64 machine
-also passed the same full suite, reboot, and rerun checks.
+`needsSetup:false`. The same full suite, reboot, and rerun checks also passed on v1.0.0-rc.1
+and v1.0.0, before the v1.0.1 dependency update.
 
-### 2.2 Debian 12 amd64 — secondary target (final v1.0.0)
+### 2.2 Debian 12 amd64 — secondary target (final v1.0.1)
 
 Fresh QEMU 11.1.3 TCG overlay from the untouched Debian 12 genericcloud amd64 base,
-3 vCPU / 3 GB / 14 GB, own kernel. Exact public command at 2026-11-07T09:35:04Z: exit 0;
-Docker 29.9.3 installed; Node v26.13.0 installed; bundle 1.0.0 verified; service active.
-Health at 09:37:34Z: `version":"1.0.0","needsSetup":true,"arch":"amd64"`.
+3 vCPU / 3 GB / 14 GB, own kernel. Exact public command at 2026-11-07T10:18:39Z: exit 0;
+Docker 29.9.3 installed; Node v26.13.0 installed; bundle 1.0.1 verified; service active.
+Health at 10:21:06Z: `version":"1.0.1","needsSetup":true,"arch":"amd64"`.
 
-Focused Playwright smoke (`@smoke`) at 2026-11-07T09:46–09:49Z against
+Focused Playwright smoke (`@smoke`) at 2026-11-07T10:22–10:25Z against
 `http://127.0.0.1:8081`: first-run setup, dashboard, logout, login, store install of Uptime
 Kuma 2.4.0, app status running, app URL through the forwarded port returning 302. Result:
-1/1 passed (2.5m, emulated). Log: `/tmp/final-smoke-amd64.log`.
+1/1 passed (2.4m, emulated). Log: `/tmp/v101-smoke-amd64.log`.
 
-Port conflict test on the final v1.0.0 installer at 2026-11-07T09:59Z with
+Port conflict test on the final v1.0.1 installer at 2026-11-07T10:29Z with
 `python3 -m http.server 80` holding port 80:
 
 ```text
@@ -290,7 +291,7 @@ No changes have been made.
 
 Exit 1. No service restart or file swap occurred. The service was then restarted with the installer and health/login/app state was intact.
 
-Override test at 09:19Z (rc.1) and again at 09:57Z (final v1.0.0):
+Override test at 09:19Z (rc.1), 09:57Z (v1.0.0), and again at 10:28Z (final v1.0.1):
 
 ```bash
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo CABANA_PORT=8080 bash
@@ -300,12 +301,12 @@ Service healthy on 8080, `needsSetup:false`, admin login and running Uptime Kuma
 preserved. Reverted to port 80 with the same command plus `CABANA_PORT=80`; health on 80
 and admin/app state preserved.
 
-### 2.3 Ubuntu 24.04 amd64 and arm64 — secondary targets (final v1.0.0)
+### 2.3 Ubuntu 24.04 amd64 and arm64 — secondary targets (final v1.0.1)
 
 GitHub-hosted clean VMs: `ubuntu-24.04` (amd64) and `ubuntu-24.04-arm` (arm64), both
 Ubuntu 24.04.5 LTS. Workflow: `.github/workflows/ubuntu-vm.yml`, final dispatch run
-[42361353350](https://github.com/WisdomSky/Cabana/actions/runs/42361353350), 2026-11-07T09:49:39Z.
-Both jobs passed: amd64 in 1m20s, arm64 in 1m23s.
+[42363907636](https://github.com/WisdomSky/Cabana/actions/runs/42363907636), 2026-11-07T10:25:41Z.
+Both jobs passed: amd64 in 1m09s, arm64 in 1m12s.
 
 The workflow starts with `test ! -e /var/lib/cabana`, then runs the exact public one-liner,
 then a Playwright smoke: first-run administrator, dashboard, logout/login, store install of
@@ -319,8 +320,8 @@ Cabana: Detected Ubuntu 24.04.5 LTS (amd64).
 Cabana: Reusing the existing Docker Engine and Compose plugin.
 Cabana: Installing Node.js 26.x LTS from nodejs.org.
 Cabana: Installed Node.js v26.13.0.
-Cabana: Bundle 1.0.0 verified.
-  Open from your LAN:  http://10.1.0.27/
+Cabana: Bundle 1.0.1 verified.
+  Open from your LAN:  http://10.1.0.76/
 ```
 
 ```text
@@ -328,11 +329,11 @@ Cabana: Detected Ubuntu 24.04.5 LTS (arm64).
 Cabana: Reusing the existing Docker Engine and Compose plugin.
 Cabana: Installing Node.js 26.x LTS from nodejs.org.
 Cabana: Installed Node.js v26.13.0.
-Cabana: Bundle 1.0.0 verified.
-  Open from your LAN:  http://10.1.0.127/
+Cabana: Bundle 1.0.1 verified.
+  Open from your LAN:  http://10.1.0.201/
 ```
 
-Health artifacts: version 1.0.0, `needsSetup:true` before the smoke, arch amd64/arm64, and
+Health artifacts: version 1.0.1, `needsSetup:true` before the smoke, arch amd64/arm64, and
 Docker 28.0.4 reused from the runner image. This demonstrates reuse of an existing Docker
 Engine without replacing it, and Node LTS installation when compatible Node.js was absent.
 
@@ -346,7 +347,7 @@ Engine without replacing it, and Node LTS installation when compatible Node.js w
   been made.`
 - **Busy port**: verified above with the listening process named; installer did not stop or
   replace anything.
-- **Existing Docker without Compose** (final v1.0.0, Debian 12 amd64): the bundled
+- **Existing Docker without Compose** (v1.0.0, unchanged installer code in v1.0.1; Debian 12 amd64): the bundled
   `/usr/libexec/docker/cli-plugins/docker-compose` was moved aside, leaving Docker Engine
   working but `docker compose` unavailable. The installer detected the missing plugin and
   installed the standalone official Compose v2 plugin at
@@ -359,10 +360,10 @@ Engine without replacing it, and Node LTS installation when compatible Node.js w
 - **No disk operations**: the installer contains no partitioning/formatting/mount commands;
   storage overview only reads filesystem statistics.
 
-## 4. Sampled official-store installs (final v1.0.0)
+## 4. Sampled official-store installs (final v1.0.1)
 
 All installs used the official CasaOS/ZimaOS v2 index on the final Debian 12 arm64 Cabana
-instance (Docker 29.9.3), 2026-11-07T09:52–09:54Z.
+instance (Docker 29.9.3), 2026-11-07T10:25–10:27Z.
 
 | App | Version | Containers / health | URL check | Data |
 | --- | --- | --- | --- | --- |
@@ -404,19 +405,20 @@ amd64, and Ubuntu 24.04 amd64/arm64.
 ## 5. Release artifacts
 
 Final public release:
-[WisdomSky/Cabana v1.0.0](https://github.com/WisdomSky/Cabana/releases/tag/v1.0.0),
-published 2026-11-07T09:24Z from tag `v1.0.0`.
+[WisdomSky/Cabana v1.0.1](https://github.com/WisdomSky/Cabana/releases/tag/v1.0.1),
+published 2026-11-07T10:16Z from tag `v1.0.1`. v1.0.0 remains published as the initial
+v1 release; v1.0.1 is the current security-maintenance patch.
 
 | Asset | Size |
 | --- | --- |
 | `install.sh` | 17,885 bytes |
-| `cabana-app.tar.gz` | 493,645 bytes |
+| `cabana-app.tar.gz` | 477,546 bytes |
 | `cabana-app.tar.gz.sha256` | 84 bytes |
 
 Bundle checksum:
 
 ```text
-757e19dd74c407012749f9b00e9e313060cde67451799b5b2c8d9cee34c69fe6  cabana-app.tar.gz
+6b9ee73fb50f9f4959ef9b3b1139377017612e2e909354b8d50a8b94ad2eee98  cabana-app.tar.gz
 ```
 
 `install.sh` SHA-256 observed while fetching the latest release:
@@ -427,12 +429,9 @@ Bundle checksum:
 
 The installer verifies the bundle checksum before installing and refuses an unverified
 bundle. Release workflow run
-[42359580715](https://github.com/WisdomSky/Cabana/actions/runs/42359580715) built and
-published the initial assets; after aligning the `v1.0.0` tag with the final verified
-commit, run
-[42362104907](https://github.com/WisdomSky/Cabana/actions/runs/42362104907) republished
-assets with the same SHA-256. Final Ubuntu clean-VM run
-[42361353350](https://github.com/WisdomSky/Cabana/actions/runs/42361353350) consumed the
+[42363232585](https://github.com/WisdomSky/Cabana/actions/runs/42363232585) built and
+published the v1.0.1 assets. Final Ubuntu clean-VM run
+[42363907636](https://github.com/WisdomSky/Cabana/actions/runs/42363907636) consumed the
 `latest` asset after publication. The tagged `install.sh` is also directly available at
 `https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh`.
 
@@ -451,6 +450,8 @@ assets with the same SHA-256. Final Ubuntu clean-VM run
   suite and the smoke suite; the final full suite passes.
 - Store app detail now previews the published Compose file to show the real port before
   installation.
+- v1.0.1 updates Express, Multer, and YAML to patched releases; `npm audit --omit=dev`
+  reports 0 vulnerabilities for the server. The complete v1.0.1 clean-VM matrix was rerun.
 
 ### Environment notes
 
