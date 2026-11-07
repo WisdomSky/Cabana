@@ -410,7 +410,7 @@ published 2026-11-07T09:24Z from tag `v1.0.0`.
 | Asset | Size |
 | --- | --- |
 | `install.sh` | 17,885 bytes |
-| `cabana-app.tar.gz` | 493,646 bytes |
+| `cabana-app.tar.gz` | 493,645 bytes |
 | `cabana-app.tar.gz.sha256` | 84 bytes |
 
 Bundle checksum:
