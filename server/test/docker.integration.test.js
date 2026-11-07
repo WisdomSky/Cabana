@@ -102,8 +102,6 @@ test('real Docker lifecycle: custom Compose install, HTTP, stop/start, uninstall
   const body = await waitForHttp(`http://127.0.0.1:${port}/`);
   assert.match(body, /Hostname:/);
 
-  const dataPath = path.join(dataDir, 'AppData', appId, 'keep');
-
   let result = await apps.stop(appId);
   assert.equal(result.app.status, 'stopped');
   result = await apps.start(appId);
