@@ -156,6 +156,43 @@ screenshots are committed in `docs/screenshots`:
 `store-mobile.png`, `store-detail-desktop.png`, `files-mobile.png`, `storage-desktop.png`,
 `settings-desktop.png`, and `custom-privileged-confirmation-desktop.png`.
 
+### 1.3 Backend suite inside the final Debian 12 arm64 VM
+
+To make “full suite on one target” literal, the server tests were also copied to the final
+VM (test tooling only; the production Cabana installation still came from the public
+release) and run with the VM's installed Node v26.13.0:
+
+```bash
+export PATH=/opt/cabana/node/bin:$PATH
+cd /tmp/cabana-src/server
+npm ci
+npm test
+sudo env PATH=/opt/cabana/node/bin:/usr/bin:/bin CABANA_REAL_DOCKER=1 \
+  node --test test/docker.integration.test.js
+```
+
+Outcome, 2026-11-07T09:58–09:59Z:
+
+```text
+ℹ tests 36
+ℹ pass 34
+ℹ fail 0
+ℹ skipped 2
+```
+
+```text
+✔ real Docker volume failures are surfaced with the underlying error
+✔ real Docker lifecycle: custom Compose install, HTTP, stop/start, uninstall preserving data
+ℹ tests 2
+ℹ pass 2
+ℹ fail 0
+```
+
+The first run skipped the real-Docker tests because the unprivileged test user could not
+open the Docker socket; they were then run as root, matching the production Cabana service,
+and both passed against the VM's Docker 29.9.3. Logs:
+`/tmp/final-vm-backend-tests.txt` and `/tmp/final-vm-docker-tests.txt`.
+
 ## 2. Clean-VM installer runs
 
 ### 2.1 Debian 12 arm64 — primary target (final v1.0.0)
@@ -241,7 +278,7 @@ Focused Playwright smoke (`@smoke`) at 2026-11-07T09:46–09:49Z against
 Kuma 2.4.0, app status running, app URL through the forwarded port returning 302. Result:
 1/1 passed (2.5m, emulated). Log: `/tmp/final-smoke-amd64.log`.
 
-Port conflict test (earlier rc.1 installer, unchanged logic) at 09:18Z with
+Port conflict test on the final v1.0.0 installer at 2026-11-07T09:59Z with
 `python3 -m http.server 80` holding port 80:
 
 ```text
@@ -251,9 +288,9 @@ Cabana's default port is 80. Free the port, or install Cabana on another port:
 No changes have been made.
 ```
 
-Exit 1. No service restart or file swap occurred.
+Exit 1. No service restart or file swap occurred. The service was then restarted with the installer and health/login/app state was intact.
 
-Override test at 09:19Z:
+Override test at 09:19Z (rc.1) and again at 09:57Z (final v1.0.0):
 
 ```bash
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo CABANA_PORT=8080 bash
@@ -309,6 +346,13 @@ Engine without replacing it, and Node LTS installation when compatible Node.js w
   been made.`
 - **Busy port**: verified above with the listening process named; installer did not stop or
   replace anything.
+- **Existing Docker without Compose** (final v1.0.0, Debian 12 amd64): the bundled
+  `/usr/libexec/docker/cli-plugins/docker-compose` was moved aside, leaving Docker Engine
+  working but `docker compose` unavailable. The installer detected the missing plugin and
+  installed the standalone official Compose v2 plugin at
+  `/usr/local/lib/docker/cli-plugins/docker-compose` without replacing Docker. Result:
+  `docker compose version` returned `v5.7.0`, health remained v1.0.0/`needsSetup:false`,
+  admin login still worked, and Uptime Kuma remained running.
 - **Own port on rerun**: verified above; installer identified its own service and proceeded
   with a safe rerun.
 - **Rerun data safety**: verified above with unchanged marker hashes and working admin login.
