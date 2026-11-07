@@ -1,0 +1,15 @@
+Cabana is an independent project. It is not affiliated with, endorsed by, or
+sponsored by IceWhale Technology or the CasaOS and ZimaOS projects.
+
+App catalog data, app definitions, icons, screenshots, and app metadata are
+fetched from the official published CasaOS/ZimaOS App Store repository:
+
+  https://github.com/IceWhaleTech/CasaOS-AppStore
+
+That content remains the property of its respective authors and is subject to
+the licenses of the individual applications and the app store repository.
+Cabana does not bundle app images or app store content in its release
+artifacts. Brand names and trademarks belong to their respective owners.
+
+The Cabana name, installer, server, and web interface are provided under the
+MIT License in LICENSE.

@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            web/package-lock.json
+      - name: Install dependencies
+        run: |
+          npm --prefix server ci
+          npm --prefix web ci
+      - name: Test
+        run: npm --prefix server test
+      - name: Build release bundle
+        run: bash scripts/build-release.sh
+      - name: Verify artifact contents
+        run: |
+          tar -tzf release/cabana-app.tar.gz | head -30
+          tar -tzf release/cabana-app.tar.gz | grep -q 'cabana-app/server.cjs'
+          tar -tzf release/cabana-app.tar.gz | grep -q 'cabana-app/web/dist/index.html'
+          tar -tzf release/cabana-app.tar.gz | grep -q 'cabana-app/VERSION'
+          sha256sum -c release/cabana-app.tar.gz.sha256 --ignore-missing
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            release/cabana-app.tar.gz \
+            release/cabana-app.tar.gz.sha256 \
+            release/install.sh \
+            --title "Cabana ${GITHUB_REF_NAME}" \
+            --notes-file docs/RELEASE_NOTES.md

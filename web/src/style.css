@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-cabana-950: #062726;
+  --color-cabana-900: #0a3534;
+  --color-cabana-800: #0e4543;
+  --color-cabana-700: #115854;
+  --color-cabana-600: #0f6f69;
+  --color-cabana-500: #168f86;
+  --color-cabana-400: #35b4a9;
+  --color-cabana-300: #7fd8cc;
+  --color-cabana-200: #b9ebe3;
+  --color-cabana-100: #dcf6f1;
+  --color-cabana-50: #effcf9;
+  --color-sand-50: #fbf8f1;
+  --color-sand-100: #f6f0e3;
+  --color-sand-200: #eadfc9;
+  --color-sand-300: #dccbae;
+  --color-coral-500: #dd7355;
+  --color-coral-100: #fbe9e2;
+  --color-ink: #122827;
+  --color-muted: #5e716e;
+  --radius-xl: 0.9rem;
+  --radius-2xl: 1.25rem;
+}
+
+html {
+  background: var(--color-sand-50);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-sand-50);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-sand-200 bg-white shadow-[0_1px_2px_rgba(18,40,39,0.04)];
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-cabana-900 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-cabana-800 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-sand-200 bg-white px-3.5 py-2 text-sm font-semibold text-ink transition-colors hover:bg-sand-100 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold text-muted transition-colors hover:bg-sand-100 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-coral-500 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-sm {
+    @apply rounded-lg px-2.5 py-1.5 text-xs;
+  }
+  .input {
+    @apply w-full rounded-xl border border-sand-300 bg-white px-3 py-2 text-sm text-ink outline-none placeholder:text-muted/60 focus:border-cabana-500 focus:ring-2 focus:ring-cabana-200;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-sand-200 bg-sand-50 px-2.5 py-1 text-xs font-medium text-muted;
+  }
+  .nav-link {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-cabana-100/80 transition-colors hover:bg-white/10 hover:text-white;
+  }
+  .nav-link-active {
+    @apply bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)];
+  }
+  .table-head {
+    @apply px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted;
+  }
+}
+
+::selection {
+  background: var(--color-cabana-200);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-sand-300) transparent;
+}

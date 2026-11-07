@@ -1,0 +1,24 @@
+{
+  "name": "cabana-server",
+  "version": "1.0.0-rc.1",
+  "private": true,
+  "type": "module",
+  "main": "src/start.js",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "esbuild src/start.js --bundle --platform=node --format=cjs --outfile=dist/server.cjs --external:node:* --banner:js=\"/* Cabana server - bundled */\"",
+    "test": "node --test test/*.test.js",
+    "test:docker": "CABANA_REAL_DOCKER=1 node --test test/*.test.js"
+  },
+  "dependencies": {
+    "express": "4.21.2",
+    "multer": "2.0.2",
+    "yaml": "2.8.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10",
+    "supertest": "7.1.4"
+  }
+}
