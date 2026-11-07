@@ -70,9 +70,10 @@ journalctl -u cabana -f
 Full commands, environment versions, timestamps, and outcomes are in
 [`VERIFICATION.md`](VERIFICATION.md).
 
-- Automated backend suite: **36 tests** — setup/auth, sessions/CSRF, store parsing and
-  compose translation, file confinement, app lifecycle, settings, plus two real-Docker
-  integration tests (lifecycle and volume-failure surfacing).
+- Automated backend suite: **36 tests total**, including two real-Docker integration tests
+  (lifecycle and volume-failure surfacing) run separately. Coverage includes setup/auth,
+  sessions/CSRF, store parsing and compose translation, file confinement, app lifecycle,
+  and settings.
 - Playwright E2E: **6 scenarios** covering first-run, login/logout, dashboard data, storage,
   store search/category/architecture filtering, install/start/stop/uninstall with data
   preservation and explicit deletion, custom Compose import, privileged confirmation, file
