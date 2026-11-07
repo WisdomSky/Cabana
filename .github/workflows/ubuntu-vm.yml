@@ -1,0 +1,79 @@
+name: Ubuntu VM acceptance
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  ubuntu:
+    name: Ubuntu 24.04 ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    env:
+      CABANA_E2E_SMOKE: "1"
+      CABANA_E2E_BASE_URL: "http://127.0.0.1"
+      CABANA_E2E_APP_URL: "http://127.0.0.1:3001/"
+      CABANA_E2E_LABEL: ubuntu-24.04-${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prove clean host
+        run: |
+          set -eux
+          cat /etc/os-release
+          uname -m
+          test ! -e /var/lib/cabana
+          systemctl is-system-running || true
+          ss -ltn 'sport = :80' || true
+      - name: Install Cabana with the exact public one-liner
+        run: |
+          set -o pipefail
+          curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo bash 2>&1 | tee /tmp/cabana-install.log
+          echo "--- service ---"
+          systemctl is-enabled cabana
+          systemctl is-active cabana
+          curl -fsS http://127.0.0.1/api/health | tee /tmp/cabana-health.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - name: Install Playwright
+        run: |
+          npm --prefix e2e ci
+          npx --prefix e2e playwright install chromium
+      - name: First run, login, and one catalog app install
+        run: npx --prefix e2e playwright test
+      - name: Post-check
+        if: always()
+        run: |
+          echo "--- installer log ---"
+          cat /tmp/cabana-install.log || true
+          echo "--- cabana service ---"
+          sudo systemctl status cabana --no-pager || true
+          echo "--- health ---"
+          curl -fsS http://127.0.0.1/api/health || true
+          echo "--- docker ---"
+          sudo docker ps -a --format '{{.Names}} {{.Status}} {{.Ports}}' || true
+          echo "--- app data ---"
+          sudo find /DATA -maxdepth 4 -type f | head -20 || true
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-24.04-${{ matrix.arch }}-evidence
+          path: |
+            /tmp/cabana-install.log
+            /tmp/cabana-health.json
+            e2e/screenshots
+            e2e/playwright-report
+          if-no-files-found: ignore
