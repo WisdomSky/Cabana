@@ -27,3 +27,5 @@ release/
 .vms/
 
 .cabana-docker/
+.openchamber/
+.cabana-docker*/

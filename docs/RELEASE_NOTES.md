@@ -67,7 +67,8 @@ and narrow-viewport evidence.
   shadcn-vue UI, including data preservation, explicit data deletion, custom Compose, and
   privileged confirmation.
 - Clean-VM installer checks on Debian 12 and Ubuntu 24.04, amd64 and arm64; full suite,
-  reboot persistence, and idempotent reinstall on Debian 12 arm64.
+  reboot persistence, and idempotent reinstall on Debian 12 arm64. Final Ubuntu run:
+  https://github.com/WisdomSky/Cabana/actions/runs/42367982882
 - Sampled store installs: Uptime Kuma 2.4.0, Gitea 1.26.2, Immich 2.7.2 (multi-service).
 - Uninstaller defaults and Docker-removal path verified on disposable VMs.
 - `npm run docker` verified with a first-run setup and Uptime Kuma install.

@@ -13,6 +13,8 @@ curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.
 Open the printed LAN URL, create the sole administrator account, and install your first app.
 There are no default credentials.
 
+![Cabana dashboard](docs/screenshots/dashboard-desktop.png)
+
 ## What you get
 
 - **Dashboard** in a CasaOS-inspired layout: clock, real CPU/RAM rings, storage, network
@@ -124,20 +126,26 @@ Full commands, environment versions, timestamps, and outcomes are in
   (lifecycle and volume-failure surfacing) run separately. Coverage includes setup/auth,
   sessions/CSRF, store parsing and compose translation, file confinement, app lifecycle,
   and settings.
-- Playwright E2E: **6 scenarios** covering first-run, login/logout, dashboard data, storage,
-  store search/category/architecture filtering, install/start/stop/uninstall with data
-  preservation and explicit deletion, custom Compose import, privileged confirmation, file
-  operations, settings, and desktop/narrow screenshots.
+- Playwright E2E: **6 scenarios** covering first-run, login/logout, the shadcn-vue dashboard,
+  storage, store search/category/architecture filtering, install/start/stop/uninstall with
+  data preservation and explicit deletion, custom Compose import, privileged confirmation,
+  file operations, settings, and desktop/narrow screenshots.
+- Uninstaller: interactive defaults keep Cabana state, app data, and Docker. Both the safe
+  default and the explicit `--remove-data --remove-docker` path were tested on disposable VMs.
+- `npm run docker`: first-run setup and a real Uptime Kuma store install verified inside a
+  local container using the host Docker socket, with state under `.cabana-docker/`.
 - Clean-VM matrix: Debian 12 and Ubuntu 24.04 on amd64 and arm64. Debian 12 arm64 runs the
   full suite, a real reboot, and an idempotent second install with data hashes unchanged.
   Ubuntu 24.04 amd64/arm64 run the exact public one-liner on GitHub-hosted clean VMs
-  ([final run](https://github.com/WisdomSky/Cabana/actions/runs/42363907636)); Debian 12
+  ([final run](https://github.com/WisdomSky/Cabana/actions/runs/42367982882)); Debian 12
   amd64 runs the same one-liner followed by setup, login, and a store app install.
 - Sampled official-store installs: Uptime Kuma 2.4.0, Gitea 1.26.2, and multi-service
   Immich 2.7.2 (server, machine learning, PostgreSQL, Redis). All containers were healthy
   or running and the app URLs returned successful responses.
 - Installer safety: busy-port refusal with process identification, documented override,
   unsupported Fedora refusal, non-root refusal, safe rerun, and rollback path.
+- UI stack: shadcn-vue-style components built on Reka UI primitives, shared design tokens,
+  and a CasaOS-inspired dashboard layout.
 
 Screenshots: [`docs/screenshots`](docs/screenshots).
 

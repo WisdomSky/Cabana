@@ -1,24 +1,27 @@
 # Cabana verification
 
 This document records the exact environments, commands, versions, timestamps, and outcomes
-used for Cabana v1.0.1. v1.0.1 is a security-maintenance patch for v1.0.0 (updated
-Express, Multer, and YAML dependencies; no API changes). Anything not run is explicitly
-marked as not run; a partial run is never reported as passed.
+used for Cabana v1.1.0. v1.1.0 adds the shadcn-vue interface, the CasaOS-inspired dashboard,
+the interactive uninstaller, and `npm run docker`; the v1.0.1 security dependency updates are
+included. Anything not run is explicitly marked as not run; a partial run is never reported
+as passed.
 
 ## Status summary
 
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Backend unit/integration tests | **Pass** | 36 tests; 34 pass + 2 real-Docker tests pass separately |
-| Playwright E2E (all required flows) | **Pass** | 6/6 on a fresh Debian 12 arm64 QEMU VM, v1.0.1 |
-| Debian 12 arm64 clean VM: installer + full suite + reboot + second install | **Pass** | QEMU 16G VM, own kernel, final v1.0.1 |
-| Debian 12 amd64 clean VM: installer + setup/login + store app | **Pass** | QEMU 14G VM, final v1.0.1 |
-| Ubuntu 24.04 amd64 clean VM: installer + setup/login + store app | **Pass** | GitHub-hosted VM run 42363907636, final v1.0.1 |
-| Ubuntu 24.04 arm64 clean VM: installer + setup/login + store app | **Pass** | GitHub-hosted VM run 42363907636, final v1.0.1 |
+| Playwright E2E (all required flows, shadcn-vue UI) | **Pass** | 6/6 on a fresh Debian 12 arm64 QEMU VM, v1.1.0 |
+| Debian 12 arm64 clean VM: installer + full suite + reboot + second install | **Pass** | QEMU 16G VM, own kernel, final v1.1.0 |
+| Debian 12 amd64 clean VM: installer + setup/login + store app | **Pass** | QEMU 14G VM, final v1.1.0 |
+| Ubuntu 24.04 amd64 clean VM: installer + setup/login + store app | **Pass** | GitHub-hosted VM run 42367982882, final v1.1.0 |
+| Ubuntu 24.04 arm64 clean VM: installer + setup/login + store app | **Pass** | GitHub-hosted VM run 42367982882, final v1.1.0 |
 | Sampled store installs | **Pass** | Uptime Kuma, Gitea, multi-service Immich; URLs and health below |
 | Installer port conflict + override | **Pass** | Busy-port refusal and 8080 override on Debian 12 amd64 |
 | Unsupported OS and non-root refusal | **Pass** | Fedora 42 container and Debian non-root run |
-| Tagged public release with artifacts | **Pass** | v1.0.1 release and checksum below |
+| Uninstaller defaults and Docker-removal path | **Pass** | Interactive defaults and release-asset test on disposable VMs |
+| `npm run docker` local container mode | **Pass** | First-run, Uptime Kuma install, health, host-side data |
+| Tagged public release with artifacts | **Pass** | v1.1.0 release and checksum below |
 
 No required check was skipped. No required target or test failed at completion.
 
@@ -26,7 +29,7 @@ No required check was skipped. No required target or test failed at completion.
 
 | Component | Version / detail |
 | --- | --- |
-| Cabana | 1.0.1 |
+| Cabana | 1.1.0 |
 | Local test host | macOS 27.0 (Apple M3 Pro, arm64), Node.js v26.10.0, npm 11.19.1 |
 | Local Docker | Docker 29.8.2, Compose v5.5.0 (OrbStack Linux engine) |
 | True-VM hypervisor | QEMU 11.1.3 with HVF (arm64) and TCG (amd64) |
@@ -104,8 +107,8 @@ Coverage points:
 
 CI: `.github/workflows/ci.yml` runs the server tests on Node 24 and Node 26 and runs the
 real-Docker lifecycle/volume tests on Ubuntu 24.04. Final CI run
-[42363228833](https://github.com/WisdomSky/Cabana/actions/runs/42363228833) passed on
-2026-11-07T10:16Z.
+[42367296723](https://github.com/WisdomSky/Cabana/actions/runs/42367296723) passed on
+2026-11-07T11:13Z.
 
 ### 1.2 Playwright E2E
 
@@ -120,14 +123,15 @@ npx playwright test
 
 Outcome, 2026-11-07T08:42Z: 6/6 passed in 29.5s.
 
-Final v1.0.1 command against the fresh Debian 12 arm64 QEMU VM (server started from the
+Final v1.1.0 command against the fresh Debian 12 arm64 QEMU VM (server started from the
 public installer, not from the repository):
 
 ```bash
 CABANA_E2E_BASE_URL=http://127.0.0.1:8080 npx playwright test
 ```
 
-Outcome, 2026-11-07T10:18:39–10:22:07Z: 6/6 passed in 53.7s. Log: `/tmp/v101-e2e-arm.log`.
+Outcome, 2026-11-07T11:18:48–11:19:41Z: 6/6 passed in 53.3s with the shadcn-vue UI. Log:
+`/tmp/v110-e2e-arm.log`.
 
 Scenarios:
 
@@ -153,9 +157,10 @@ Scenarios:
 
 Desktop screenshots use 1440×900; narrow screenshots use 390×844. Selected final
 screenshots are committed in `docs/screenshots`:
-`dashboard-desktop.png`, `dashboard-mobile.png`, `setup-desktop.png`, `apps-desktop.png`,
-`store-mobile.png`, `store-detail-desktop.png`, `files-mobile.png`, `storage-desktop.png`,
-`settings-desktop.png`, and `custom-privileged-confirmation-desktop.png`.
+`dashboard-desktop.png`, `dashboard-mobile.png`, `setup-desktop.png`, `login-desktop.png`,
+`apps-desktop.png`, `store-mobile.png`, `store-detail-desktop.png`, `files-mobile.png`,
+`storage-desktop.png`, `settings-desktop.png`, and
+`custom-privileged-confirmation-desktop.png`.
 
 ### 1.3 Backend suite inside the final Debian 12 arm64 VM
 
@@ -172,7 +177,7 @@ sudo env PATH=/opt/cabana/node/bin:/usr/bin:/bin CABANA_REAL_DOCKER=1 \
   node --test test/docker.integration.test.js
 ```
 
-Outcome, 2026-11-07T10:23Z:
+Outcome, 2026-11-07T11:21Z:
 
 ```text
 ℹ tests 36
@@ -192,18 +197,18 @@ Outcome, 2026-11-07T10:23Z:
 The first run skipped the real-Docker tests because the unprivileged test user could not
 open the Docker socket; they were then run as root, matching the production Cabana service,
 and both passed against the VM's Docker 29.9.3. Logs:
-`/tmp/v101-vm-backend-tests.txt`.
+`/tmp/v110-vm-backend-tests.txt`.
 
 ## 2. Clean-VM installer runs
 
-### 2.1 Debian 12 arm64 — primary target (final v1.0.1)
+### 2.1 Debian 12 arm64 — primary target (final v1.1.0)
 
 Hypervisor: QEMU 11.1.3, `-machine virt,accel=hvf -cpu host`, 4 vCPU / 4 GB / 16 GB,
 Debian 12 genericcloud arm64 image, cloud-init user `cabana` with passwordless sudo.
 This is a true VM with its own kernel (`6.1.0-54-cloud-arm64`) and reboot cycle. The final
 overlay was created fresh from the untouched cloud base image for this run.
 
-Exact public command at 2026-11-07T10:17:46Z:
+Exact public command at 2026-11-07T11:15:37Z:
 
 ```bash
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo bash
@@ -213,47 +218,47 @@ Outcome: exit 0; Docker installed from Docker's repository; Node v26.13.0 instal
 verified; service enabled and active on port 80.
 
 ```text
-Cabana: Bundle 1.0.1 verified.
+Cabana: Bundle 1.1.0 verified.
 Cabana: Installing application files and the systemd unit.
 Created symlink /etc/systemd/system/multi-user.target.wants/cabana.service → /etc/systemd/system/cabana.service.
   Open from your LAN:  http://10.0.2.15/
 ```
 
-Health at 2026-11-07T10:18:38Z:
-`{"status":"ok","version":"1.0.1","needsSetup":true,"arch":"arm64","docker":{"available":true,"version":"29.9.3"}}`.
+Health at 2026-11-07T11:17:01Z:
+`{"status":"ok","version":"1.1.0","needsSetup":true,"arch":"arm64","docker":{"available":true,"version":"29.9.3"}}`.
 
 The printed address is the QEMU user-mode guest address; the host reached the service
 through `hostfwd tcp:127.0.0.1:8080-:80`. On real hardware the installer prints the LAN
 address (observed `192.168.139.75` in a supplemental isolated-machine run).
 
-Full E2E: 6/6 passed at 10:22:07Z.
+Full E2E: 6/6 passed at 11:19:41Z.
 
-Reboot test at 10:22:17Z:
+Reboot test at 11:20:08Z:
 
 ```text
-BOOT_ID_BEFORE=f520fdc8-7681-4795-b911-cfcb2b62f21c
-BOOT_ID_AFTER=c651e426-3186-4ac3-8e84-a2110d8999b9
+BOOT_ID_BEFORE=5b54d065-0b15-439d-ae08-8681fef51f68
+BOOT_ID_AFTER=b6ab546d-457b-4862-9dc3-54b3584288af
 uptime after reboot: up 0 minutes
 systemctl is-active cabana docker: active / active
 cabana_echo-test-echo: Up
 ```
 
-`06-persistence` passed after reboot at 10:22:34Z.
+`06-persistence` passed after reboot at 11:20:24Z.
 
-Idempotent second install, 2026-11-07T10:22:44Z:
+Idempotent second install, 2026-11-07T11:20:41Z:
 
 ```bash
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo bash
 ```
 
 Outcome: exit 0; installer recognized its own service on port 80, reused Docker and Node,
-verified bundle 1.0.1, reinstalled code, and preserved state.
+verified bundle 1.1.0, reinstalled code, and preserved state.
 
 ```text
 Cabana: Port 80 is already served by the installed Cabana service; continuing with a safe rerun.
 Cabana: Reusing the existing Docker Engine and Compose plugin.
 Cabana: Reusing Cabana's existing Node.js v26.13.0.
-Cabana: Bundle 1.0.1 verified.
+Cabana: Bundle 1.1.0 verified.
 ```
 
 Before/after SHA-256, unchanged:
@@ -263,23 +268,23 @@ Before/after SHA-256, unchanged:
 1111fa86415faf654e86ed39c967f9bbe6939acdaf1865f792ad44919c49a8d5  /DATA/AppData/echo-test/data/hello.txt
 ```
 
-Admin login (same password) and `@persistence` passed again after the rerun; health reported
-`needsSetup:false`. The same full suite, reboot, and rerun checks also passed on v1.0.0-rc.1
-and v1.0.0, before the v1.0.1 dependency update.
+Admin login (same password) and `@persistence` passed again after the rerun at 11:20:42Z;
+health reported `needsSetup:false`. The same full suite, reboot, and rerun checks also passed
+on v1.0.0-rc.1, v1.0.0, and v1.0.1.
 
-### 2.2 Debian 12 amd64 — secondary target (final v1.0.1)
+### 2.2 Debian 12 amd64 — secondary target (final v1.1.0)
 
 Fresh QEMU 11.1.3 TCG overlay from the untouched Debian 12 genericcloud amd64 base,
-3 vCPU / 3 GB / 14 GB, own kernel. Exact public command at 2026-11-07T10:18:39Z: exit 0;
-Docker 29.9.3 installed; Node v26.13.0 installed; bundle 1.0.1 verified; service active.
-Health at 10:21:06Z: `version":"1.0.1","needsSetup":true,"arch":"amd64"`.
+3 vCPU / 3 GB / 14 GB, own kernel. Exact public command at 2026-11-07T11:17:02Z: exit 0;
+Docker 29.9.3 installed; Node v26.13.0 installed; bundle 1.1.0 verified; service active.
+Health at 11:18:41Z: `version":"1.1.0","needsSetup":true,"arch":"amd64"`.
 
-Focused Playwright smoke (`@smoke`) at 2026-11-07T10:22–10:25Z against
+Focused Playwright smoke (`@smoke`) at 2026-11-07T11:21–11:23Z against
 `http://127.0.0.1:8081`: first-run setup, dashboard, logout, login, store install of Uptime
 Kuma 2.4.0, app status running, app URL through the forwarded port returning 302. Result:
-1/1 passed (2.4m, emulated). Log: `/tmp/v101-smoke-amd64.log`.
+1/1 passed (2.1m, emulated). Log: `/tmp/v110-smoke-amd64.log`.
 
-Port conflict test on the final v1.0.1 installer at 2026-11-07T10:29Z with
+Port conflict test (installer code unchanged in v1.1.0) at 2026-11-07T10:29Z with
 `python3 -m http.server 80` holding port 80:
 
 ```text
@@ -291,7 +296,7 @@ No changes have been made.
 
 Exit 1. No service restart or file swap occurred. The service was then restarted with the installer and health/login/app state was intact.
 
-Override test at 09:19Z (rc.1), 09:57Z (v1.0.0), and again at 10:28Z (final v1.0.1):
+Override test at 09:19Z (rc.1), 09:57Z (v1.0.0), and 10:28Z (v1.0.1; installer unchanged in v1.1.0):
 
 ```bash
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo CABANA_PORT=8080 bash
@@ -301,12 +306,12 @@ Service healthy on 8080, `needsSetup:false`, admin login and running Uptime Kuma
 preserved. Reverted to port 80 with the same command plus `CABANA_PORT=80`; health on 80
 and admin/app state preserved.
 
-### 2.3 Ubuntu 24.04 amd64 and arm64 — secondary targets (final v1.0.1)
+### 2.3 Ubuntu 24.04 amd64 and arm64 — secondary targets (final v1.1.0)
 
 GitHub-hosted clean VMs: `ubuntu-24.04` (amd64) and `ubuntu-24.04-arm` (arm64), both
 Ubuntu 24.04.5 LTS. Workflow: `.github/workflows/ubuntu-vm.yml`, final dispatch run
-[42363907636](https://github.com/WisdomSky/Cabana/actions/runs/42363907636), 2026-11-07T10:25:41Z.
-Both jobs passed: amd64 in 1m09s, arm64 in 1m12s.
+[42367982882](https://github.com/WisdomSky/Cabana/actions/runs/42367982882), 2026-11-07T11:23:28Z.
+Both jobs passed: amd64 in 1m25s, arm64 in 1m25s.
 
 The workflow starts with `test ! -e /var/lib/cabana`, then runs the exact public one-liner,
 then a Playwright smoke: first-run administrator, dashboard, logout/login, store install of
@@ -320,8 +325,8 @@ Cabana: Detected Ubuntu 24.04.5 LTS (amd64).
 Cabana: Reusing the existing Docker Engine and Compose plugin.
 Cabana: Installing Node.js 26.x LTS from nodejs.org.
 Cabana: Installed Node.js v26.13.0.
-Cabana: Bundle 1.0.1 verified.
-  Open from your LAN:  http://10.1.0.76/
+Cabana: Bundle 1.1.0 verified.
+  Open from your LAN:  http://10.1.0.83/
 ```
 
 ```text
@@ -329,11 +334,11 @@ Cabana: Detected Ubuntu 24.04.5 LTS (arm64).
 Cabana: Reusing the existing Docker Engine and Compose plugin.
 Cabana: Installing Node.js 26.x LTS from nodejs.org.
 Cabana: Installed Node.js v26.13.0.
-Cabana: Bundle 1.0.1 verified.
-  Open from your LAN:  http://10.1.0.201/
+Cabana: Bundle 1.1.0 verified.
+  Open from your LAN:  http://10.1.0.30/
 ```
 
-Health artifacts: version 1.0.1, `needsSetup:true` before the smoke, arch amd64/arm64, and
+Health artifacts: version 1.1.0, `needsSetup:true` before the smoke, arch amd64/arm64, and
 Docker 28.0.4 reused from the runner image. This demonstrates reuse of an existing Docker
 Engine without replacing it, and Node LTS installation when compatible Node.js was absent.
 
@@ -360,10 +365,75 @@ Engine without replacing it, and Node LTS installation when compatible Node.js w
 - **No disk operations**: the installer contains no partitioning/formatting/mount commands;
   storage overview only reads filesystem statistics.
 
-## 4. Sampled official-store installs (final v1.0.1)
+### 3.1 Uninstaller verification
+
+The uninstaller is published as `uninstall.sh` on the v1.1.0 release. Its SHA-256 is
+`f0a3866e836902b71b8c53a10f951c35a5b36ccc22c503663aa91f503adcb133`.
+
+Interactive prompt test on an isolated Debian 12 arm64 machine (2026-11-07T11:10Z), using a
+pseudo-terminal and answering `n` to both questions:
+
+```bash
+sudo bash /tmp/uninstall.sh
+# Remove Cabana state and /DATA/AppData? [y/N] n
+# Remove Docker Engine and ALL Docker containers...? [y/N] n
+```
+
+Outcome: `cabana_gone`, `Docker: kept`, `state_kept`, `appdata_kept`, and the previously
+installed Uptime Kuma container remained running. Both prompts defaulted to no.
+
+Release-asset test on the final Debian 12 amd64 VM (2026-11-07T11:26Z):
+
+```bash
+curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/uninstall.sh -o /tmp/uninstall.sh
+sudo bash /tmp/uninstall.sh --yes
+```
+
+Outcome: Cabana service/files removed; `/var/lib/cabana`, `/DATA/AppData`, Docker, and the
+Uptime Kuma workload kept; Docker status printed `kept`.
+
+```bash
+sudo bash /tmp/uninstall.sh --yes --remove-data --remove-docker
+```
+
+Outcome at 11:27Z: Docker command absent, Docker packages absent, `/var/lib/cabana` absent,
+`/DATA/AppData` absent, no containers. This was run on a disposable VM. The interactive
+Docker prompt additionally requires typing `REMOVE`; the explicit flag is the non-interactive
+confirmation.
+
+### 3.2 `npm run docker` local test mode
+
+Validated from the source checkout on the local macOS/Docker host:
+
+```bash
+CABANA_DOCKER_PORT=8090 CABANA_DOCKER_DIR="$PWD/.cabana-docker-test2" npm run docker
+```
+
+The script built the image, started `cabana-local`, and reported healthy version 1.1.0. A
+fresh first-run setup succeeded, Uptime Kuma installed through the store, its container was
+`running healthy`, and Uptime Kuma's host data appeared under the host-visible
+`.cabana-docker-test2/data/AppData/uptimekuma` path. No Cabana or Node packages were
+installed on the host. `npm run docker:stop` stops the container while keeping
+`.cabana-docker/`.
+
+The container uses the host Docker socket so test apps are published on the host; this is a
+development convenience with root-equivalent Docker access, not a hardened deployment mode.
+
+### 3.3 shadcn-vue interface
+
+The frontend now uses shadcn-vue-style components backed by Reka UI primitives:
+`Button`, `Card`, `Input`, `Textarea`, `Label`, `Badge`, `Progress`, `Dialog`, `Sheet`,
+`Avatar`, `Select`, `Separator`, and `Skeleton`, with shared `cn()` utilities and design
+tokens. The dashboard follows a CasaOS-inspired layout: clock/date, CPU and RAM rings,
+storage health and usage, network history, search, and a live app tile grid. Full Playwright
+coverage passed against this UI on the final Debian 12 arm64 VM (section 1.2), and desktop
+and narrow screenshots were regenerated from that run.
+
+
+## 4. Sampled official-store installs (final v1.1.0)
 
 All installs used the official CasaOS/ZimaOS v2 index on the final Debian 12 arm64 Cabana
-instance (Docker 29.9.3), 2026-11-07T10:25–10:27Z.
+instance (Docker 29.9.3), 2026-11-07T11:23–11:25Z.
 
 | App | Version | Containers / health | URL check | Data |
 | --- | --- | --- | --- | --- |
@@ -400,38 +470,46 @@ Image digests confirmed on the final instance:
 `gitea/gitea:1.26.2@sha256:7bae79...`.
 
 Uptime Kuma was installed and verified by the E2E suites on Debian 12 arm64, Debian 12
-amd64, and Ubuntu 24.04 amd64/arm64.
+amd64, and Ubuntu 24.04 amd64/arm64; its final v1.1.0 container reported `running healthy`
+and `HTTP 302` at 2026-11-07T11:25Z.
 
 ## 5. Release artifacts
 
 Final public release:
-[WisdomSky/Cabana v1.0.1](https://github.com/WisdomSky/Cabana/releases/tag/v1.0.1),
-published 2026-11-07T10:16Z from tag `v1.0.1`. v1.0.0 remains published as the initial
-v1 release; v1.0.1 is the current security-maintenance patch.
+[WisdomSky/Cabana v1.1.0](https://github.com/WisdomSky/Cabana/releases/tag/v1.1.0),
+published 2026-11-07T11:14:20Z from tag `v1.1.0`. v1.0.1 remains published as the previous
+security-maintenance release.
 
 | Asset | Size |
 | --- | --- |
 | `install.sh` | 17,885 bytes |
-| `cabana-app.tar.gz` | 477,546 bytes |
+| `uninstall.sh` | 6,659 bytes |
+| `cabana-app.tar.gz` | 504,794 bytes |
 | `cabana-app.tar.gz.sha256` | 84 bytes |
 
 Bundle checksum:
 
 ```text
-6b9ee73fb50f9f4959ef9b3b1139377017612e2e909354b8d50a8b94ad2eee98  cabana-app.tar.gz
+44475d5598a2807b9d7129ecd1f8be0786e1f0a3c99fb5b578dd25fbd4e82078  cabana-app.tar.gz
 ```
 
 `install.sh` SHA-256 observed while fetching the latest release:
 
 ```text
 1d91d34c617bd9b50d4208e4928a2243906ecd697c7fa06722626ba57c5cc254
+
+Uninstaller SHA-256:
+
+```text
+f0a3866e836902b71b8c53a10f951c35a5b36ccc22c503663aa91f503adcb133
+```
 ```
 
 The installer verifies the bundle checksum before installing and refuses an unverified
 bundle. Release workflow run
-[42363232585](https://github.com/WisdomSky/Cabana/actions/runs/42363232585) built and
-published the v1.0.1 assets. Final Ubuntu clean-VM run
-[42363907636](https://github.com/WisdomSky/Cabana/actions/runs/42363907636) consumed the
+[42367301281](https://github.com/WisdomSky/Cabana/actions/runs/42367301281) built and
+published the v1.1.0 assets. Final Ubuntu clean-VM run
+[42367982882](https://github.com/WisdomSky/Cabana/actions/runs/42367982882) consumed the
 `latest` asset after publication. The tagged `install.sh` is also directly available at
 `https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh`.
 
@@ -451,7 +529,12 @@ published the v1.0.1 assets. Final Ubuntu clean-VM run
 - Store app detail now previews the published Compose file to show the real port before
   installation.
 - v1.0.1 updates Express, Multer, and YAML to patched releases; `npm audit --omit=dev`
-  reports 0 vulnerabilities for the server. The complete v1.0.1 clean-VM matrix was rerun.
+  reports 0 vulnerabilities for the server.
+- v1.1.0 moves the interface to shadcn-vue/Reka UI components with a CasaOS-inspired
+  dashboard. The Playwright suite was updated and passed 6/6 against the final Debian 12
+  arm64 VM and Ubuntu 24.04 amd64/arm64 smokes.
+- v1.1.0 adds the interactive uninstaller and local Docker test mode; both were verified
+  below.
 
 ### Environment notes
 
@@ -493,4 +576,12 @@ CABANA_E2E_SMOKE=1 CABANA_E2E_BASE_URL=http://SERVER-LAN-IP npx playwright test
 
 # Public installer on a supported clean host
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo bash
+
+# Local non-invasive container mode
+npm run docker
+npm run docker:stop
+
+# Uninstaller (download first so prompts can read a terminal)
+curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/uninstall.sh -o /tmp/cabana-uninstall.sh
+sudo bash /tmp/cabana-uninstall.sh
 ```
