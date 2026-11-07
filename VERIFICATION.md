@@ -428,12 +428,31 @@ Bundle checksum:
 The installer verifies the bundle checksum before installing and refuses an unverified
 bundle. Release workflow run
 [42359580715](https://github.com/WisdomSky/Cabana/actions/runs/42359580715) built and
-published the assets; final Ubuntu clean-VM run
+published the initial assets; after aligning the `v1.0.0` tag with the final verified
+commit, run
+[42362104907](https://github.com/WisdomSky/Cabana/actions/runs/42362104907) republished
+assets with the same SHA-256. Final Ubuntu clean-VM run
 [42361353350](https://github.com/WisdomSky/Cabana/actions/runs/42361353350) consumed the
 `latest` asset after publication. The tagged `install.sh` is also directly available at
 `https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh`.
 
 ## 6. Notes and limitations of this verification
+
+### Fixes found and validated during verification
+
+- Official Node.js Linux arm64 binaries need `libatomic.so.1`; the first Debian arm64 run
+  failed the Node compatibility check. The installer now installs `libatomic1` when needed,
+  and the rerun installed Node 26.13.0 and completed successfully.
+- An existing Docker Engine without the Compose plugin was detected; the installer now
+  installs the official standalone Compose v2 plugin without replacing Docker.
+- The release workflow's initial checksum verification ran from the wrong directory; it now
+  verifies from the artifact directory. The release job passes.
+- Playwright's default test discovery needed an explicit path glob for the numbered E2E
+  suite and the smoke suite; the final full suite passes.
+- Store app detail now previews the published Compose file to show the real port before
+  installation.
+
+### Environment notes
 
 - True VMs used QEMU with user-mode networking. The installer's LAN URL therefore printed
   the guest NAT address (`10.0.2.15`); host tests used forwarded ports. The same installer
