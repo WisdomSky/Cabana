@@ -40,7 +40,8 @@ and `docs/screenshots` for desktop and narrow-viewport evidence.
 - E2E: 6 Playwright scenarios against a real Debian 12 arm64 Docker host, including data
   preservation, explicit data deletion, custom Compose, and privileged confirmation.
 - Clean-VM installer checks on Debian 12 and Ubuntu 24.04, amd64 and arm64; full suite,
-  reboot persistence, and idempotent reinstall on Debian 12 arm64.
+  reboot persistence, and idempotent reinstall on Debian 12 arm64. Final Ubuntu runs:
+  https://github.com/WisdomSky/Cabana/actions/runs/42361353350
 - Sampled store installs: Uptime Kuma 2.4.0, Gitea 1.26.2, Immich 2.7.2 (multi-service).
 
 ## Limitations

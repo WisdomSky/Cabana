@@ -79,8 +79,9 @@ Full commands, environment versions, timestamps, and outcomes are in
   operations, settings, and desktop/narrow screenshots.
 - Clean-VM matrix: Debian 12 and Ubuntu 24.04 on amd64 and arm64. Debian 12 arm64 runs the
   full suite, a real reboot, and an idempotent second install with data hashes unchanged.
-  Ubuntu 24.04 amd64/arm64 run the exact public one-liner on GitHub-hosted clean VMs;
-  Debian 12 amd64 runs the same one-liner followed by setup, login, and a store app install.
+  Ubuntu 24.04 amd64/arm64 run the exact public one-liner on GitHub-hosted clean VMs
+  ([final run](https://github.com/WisdomSky/Cabana/actions/runs/42361353350)); Debian 12
+  amd64 runs the same one-liner followed by setup, login, and a store app install.
 - Sampled official-store installs: Uptime Kuma 2.4.0, Gitea 1.26.2, and multi-service
   Immich 2.7.2 (server, machine learning, PostgreSQL, Redis). All containers were healthy
   or running and the app URLs returned successful responses.
