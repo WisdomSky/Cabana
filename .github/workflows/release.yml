@@ -34,7 +34,7 @@ jobs:
           tar -tzf release/cabana-app.tar.gz | grep -q 'cabana-app/server.cjs'
           tar -tzf release/cabana-app.tar.gz | grep -q 'cabana-app/web/dist/index.html'
           tar -tzf release/cabana-app.tar.gz | grep -q 'cabana-app/VERSION'
-          sha256sum -c release/cabana-app.tar.gz.sha256 --ignore-missing
+          cd release && sha256sum -c cabana-app.tar.gz.sha256
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}

@@ -90,6 +90,10 @@ test('real Docker lifecycle: custom Compose install, HTTP, stop/start, uninstall
       - /DATA/AppData/$AppID/keep:/data
 `;
 
+  const dataPath = path.join(dataDir, 'AppData', appId, 'keep');
+  fs.mkdirSync(dataPath, { recursive: true });
+  fs.writeFileSync(path.join(dataPath, 'marker.txt'), 'preserve me');
+
   const installed = await apps.installCustom({ compose, title: 'Cabana CI Whoami', id: appId });
   assert.equal(installed.id, appId);
   assert.equal(installed.status, 'running');
@@ -99,8 +103,6 @@ test('real Docker lifecycle: custom Compose install, HTTP, stop/start, uninstall
   assert.match(body, /Hostname:/);
 
   const dataPath = path.join(dataDir, 'AppData', appId, 'keep');
-  fs.mkdirSync(dataPath, { recursive: true });
-  fs.writeFileSync(path.join(dataPath, 'marker.txt'), 'preserve me');
 
   let result = await apps.stop(appId);
   assert.equal(result.app.status, 'stopped');
