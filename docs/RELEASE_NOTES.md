@@ -52,8 +52,9 @@ curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/uninstal
 sudo bash /tmp/cabana-uninstall.sh
 ```
 
-Data and Docker are kept by default. Non-interactive flags:
-`--yes`, `--remove-data`, `--remove-docker`.
+Data and Docker are kept by default; Cabana-managed app containers continue running unless
+you choose data or Docker removal. Non-interactive flags: `--yes`, `--remove-data`,
+`--remove-docker`.
 
 ## Verified
 

@@ -86,7 +86,10 @@ It asks separately whether to remove:
 - Cabana state (`/var/lib/cabana`) and Cabana app data (`/DATA/AppData`) — default **no**;
 - Docker Engine and **all** Docker containers, images, volumes, and networks — default **no**.
 
-Both answers default to no, so simply pressing Enter keeps data and Docker. For automation:
+Both answers default to no, so simply pressing Enter keeps data and Docker. Cabana-managed
+app containers keep running when you choose the defaults. `--remove-data` removes
+Cabana-managed containers and Cabana app data; `--remove-docker` removes every Docker
+workload. For automation:
 
 ```bash
 sudo bash /tmp/cabana-uninstall.sh --yes                    # remove Cabana, keep data and Docker
