@@ -33,8 +33,7 @@ curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.
 
 ## Verified
 
-See the repository `VERIFICATION.md` for exact commands, versions, timestamps, and outcomes,
-and `docs/screenshots` for desktop and narrow-viewport evidence.
+See [VERIFICATION.md](https://github.com/WisdomSky/Cabana/blob/main/VERIFICATION.md) for exact commands, versions, timestamps, and outcomes, and [docs/screenshots](https://github.com/WisdomSky/Cabana/tree/main/docs/screenshots) for desktop and narrow-viewport evidence.
 
 - Backend: 36 tests including real-Docker lifecycle and volume-failure coverage.
 - E2E: 6 Playwright scenarios against a real Debian 12 arm64 Docker host, including data
