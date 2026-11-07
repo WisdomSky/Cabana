@@ -1,245 +1,333 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-cabana-600">Dashboard</p>
-        <h1 class="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-          {{ greeting }}{{ session.user?.username ? `, ${session.user.username}` : '' }}
-        </h1>
-        <p class="mt-1 text-sm text-muted">
-          {{ data?.host?.hostname || 'This host' }}
-          <span v-if="data?.host"> · up {{ formatUptime(data.host.uptime) }} · {{ data.host.platform }}</span>
-        </p>
-      </div>
-      <div class="flex items-center gap-2">
-        <button class="btn-secondary btn-sm" :disabled="refreshing" @click="load(true)">
-          <RefreshCw class="size-3.5" :class="{ 'animate-spin': refreshing }" /> Refresh
-        </button>
-        <RouterLink :to="{ name: 'store' }" class="btn-primary btn-sm">
-          <Store class="size-3.5" /> App store
-        </RouterLink>
-      </div>
-    </div>
-
-    <div v-if="error" class="rounded-xl border border-coral-500/30 bg-coral-100 px-4 py-3 text-sm text-coral-500">
+  <div class="space-y-4">
+    <div v-if="error" class="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-red-200">
       {{ error }}
-      <button class="ml-2 font-semibold underline" @click="load()">Try again</button>
+      <button class="ml-2 cursor-pointer font-semibold underline" @click="load()">Try again</button>
     </div>
 
-    <div v-if="!data" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div v-for="i in 4" :key="i" class="card h-32 animate-pulse bg-white/60" />
-    </div>
-
-    <template v-else>
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          label="CPU"
-          :value="`${host.cpu.usagePercent.toFixed(1)}%`"
-          :hint="`${host.cpu.cores} cores · load ${host.cpu.load1.toFixed(2)}`"
-          :percent="host.cpu.usagePercent"
-          :icon="Cpu"
-          tone="teal"
-          testid="metric-cpu"
-        />
-        <MetricCard
-          label="Memory"
-          :value="formatBytes(host.memory.used)"
-          :hint="`${formatBytes(host.memory.total)} total · ${host.memory.percent}% used`"
-          :percent="host.memory.percent"
-          :icon="MemoryStick"
-          tone="blue"
-          testid="metric-memory"
-        />
-        <MetricCard
-          label="Disk"
-          :value="host.disk ? formatBytes(host.disk.used) : '—'"
-          :hint="host.disk ? `${formatBytes(host.disk.available)} free of ${formatBytes(host.disk.total)}` : 'No data directory'"
-          :percent="host.disk?.percent ?? null"
-          :icon="HardDrive"
-          tone="coral"
-          testid="metric-disk"
-        />
-        <MetricCard
-          label="Network"
-          :value="`↓ ${formatRate(host.network.rxRate)}`"
-          :hint="`↑ ${formatRate(host.network.txRate)} · total ${formatBytes(host.network.rxBytes)} in`"
-          :icon="ArrowDownUp"
-          tone="sand"
-          testid="metric-network"
-        />
+    <div v-if="!data" class="grid gap-4 lg:grid-cols-[330px_minmax(0,1fr)]">
+      <div class="space-y-4">
+        <Skeleton class="h-32" />
+        <Skeleton class="h-64" />
+        <Skeleton class="h-40" />
       </div>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Skeleton v-for="i in 9" :key="i" class="aspect-[1.15/1]" />
+      </div>
+    </div>
 
-      <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <section class="card p-5 lg:col-span-2">
-          <div class="flex items-center justify-between">
+    <div v-else class="grid gap-4 lg:grid-cols-[330px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
+      <div class="space-y-4">
+        <Card class="overflow-hidden bg-gradient-to-br from-white/12 via-card/70 to-cabana-900/70 p-5" data-testid="clock-card">
+          <div class="flex items-start justify-between">
             <div>
-              <h2 class="font-bold tracking-tight">Your apps</h2>
-              <p class="text-xs text-muted">
-                {{ counts.running }} running · {{ counts.stopped }} stopped · {{ counts.total }} installed
-              </p>
+              <p class="text-[42px] font-light leading-none tracking-[-0.04em]">{{ clockTime }}</p>
+              <p class="mt-2 text-sm text-slate-300">{{ clockDate }}</p>
             </div>
-            <RouterLink :to="{ name: 'apps' }" class="text-xs font-bold text-cabana-700 hover:underline">
-              Manage all
+            <div class="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/8">
+              <Waves class="size-5 text-primary" />
+            </div>
+          </div>
+          <div class="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+            <span class="size-1.5 rounded-full bg-emerald-400" />
+            <span class="truncate">{{ host.hostname }}</span>
+            <span class="text-white/20">·</span>
+            <span>up {{ formatUptime(host.uptime) }}</span>
+          </div>
+        </Card>
+
+        <Card class="p-5">
+          <div class="flex items-center justify-between">
+            <h2 class="font-semibold tracking-tight">System status</h2>
+            <RouterLink :to="{ name: 'storage' }" class="grid size-8 place-items-center rounded-lg text-muted-foreground transition hover:bg-white/8 hover:text-foreground" aria-label="Open storage">
+              <ChevronRight class="size-4" />
             </RouterLink>
           </div>
-
-          <div v-if="!apps.length" class="mt-6 rounded-xl border border-dashed border-sand-300 bg-sand-50 p-6 text-center">
-            <Boxes class="mx-auto size-8 text-cabana-400" />
-            <p class="mt-2 text-sm font-semibold">No apps yet</p>
-            <p class="mt-1 text-xs text-muted">Install something from the official CasaOS/ZimaOS store to get started.</p>
-            <RouterLink :to="{ name: 'store' }" class="btn-primary btn-sm mt-4">Browse the store</RouterLink>
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            <RingMetric
+              testid="metric-cpu"
+              :value="host.cpu.usagePercent"
+              label="CPU"
+              :detail="`${host.cpu.cores} cores · load ${host.cpu.load1.toFixed(2)}`"
+            />
+            <RingMetric
+              testid="metric-memory"
+              :value="host.memory.percent"
+              label="RAM"
+              :detail="`${formatBytes(host.memory.used)} / ${formatBytes(host.memory.total)}`"
+              tone="success"
+            />
           </div>
-
-          <ul v-else class="mt-4 divide-y divide-sand-100">
-            <li v-for="app in apps" :key="app.id" class="flex items-center gap-3 py-3" :data-testid="`dashboard-app-${app.id}`">
-              <img v-if="app.iconPath" :src="iconUrl(app.iconPath)" alt="" class="size-9 rounded-lg border border-sand-200 object-contain p-1" />
-              <div v-else class="grid size-9 place-items-center rounded-lg bg-cabana-100 text-xs font-bold uppercase text-cabana-700">
-                {{ app.title.slice(0, 2) }}
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-semibold">{{ app.title }}</p>
-                <p class="truncate text-xs text-muted">
-                  {{ app.source === 'store' ? 'Official store' : 'Custom Compose' }}
-                  <span v-if="app.port"> · port {{ app.port }}</span>
-                </p>
-              </div>
-              <AppStatusBadge :status="app.status" :health="app.health" />
-              <div class="flex items-center gap-1">
-                <a
-                  v-if="app.status === 'running' && app.port"
-                  :href="appUrl(app)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="rounded-lg p-1.5 text-muted hover:bg-sand-100 hover:text-ink"
-                  title="Open app"
-                >
-                  <ExternalLink class="size-4" />
-                </a>
-                <button
-                  v-if="app.status === 'stopped' || app.status === 'error'"
-                  class="rounded-lg p-1.5 text-muted hover:bg-sand-100 hover:text-ink"
-                  title="Start app"
-                  @click="action(app, 'start')"
-                >
-                  <Play class="size-4" />
-                </button>
-                <button
-                  v-else-if="app.status === 'running'"
-                  class="rounded-lg p-1.5 text-muted hover:bg-sand-100 hover:text-ink"
-                  title="Stop app"
-                  @click="action(app, 'stop')"
-                >
-                  <Square class="size-4" />
-                </button>
-              </div>
-            </li>
-          </ul>
-        </section>
-
-        <section class="space-y-4">
-          <div class="card p-5">
-            <div class="flex items-center justify-between">
-              <h2 class="font-bold tracking-tight">Platform</h2>
-              <Container class="size-4 text-muted" />
+          <div class="mt-4 flex items-center justify-between rounded-xl border border-white/8 bg-white/4 px-3 py-2 text-xs">
+            <div class="flex min-w-0 items-center gap-2">
+              <Container class="size-4 shrink-0 text-primary" />
+              <span class="font-semibold">Docker</span>
+              <span class="truncate text-muted-foreground">{{ docker.available ? docker.version : 'Unavailable' }}</span>
             </div>
-            <dl class="mt-4 space-y-2.5 text-sm">
-              <div class="flex items-center justify-between gap-3">
-                <dt class="text-muted">Docker</dt>
-                <dd class="font-semibold" :class="docker.available ? 'text-cabana-700' : 'text-coral-500'">
-                  {{ docker.available ? `v${docker.version}` : 'Unavailable' }}
-                </dd>
+            <Badge :variant="docker.available ? 'success' : 'destructive'">
+              {{ docker.available ? 'Online' : 'Offline' }}
+            </Badge>
+          </div>
+        </Card>
+
+        <Card class="p-5" data-testid="metric-disk">
+          <div class="flex items-center justify-between">
+            <h2 class="font-semibold tracking-tight">Storage</h2>
+            <RouterLink :to="{ name: 'storage' }" class="grid size-8 place-items-center rounded-lg text-muted-foreground transition hover:bg-white/8 hover:text-foreground" aria-label="Storage settings">
+              <Settings2 class="size-4" />
+            </RouterLink>
+          </div>
+          <div class="mt-4 flex items-center gap-3">
+            <div class="grid size-12 place-items-center rounded-xl border border-white/10 bg-white/8">
+              <HardDrive class="size-6 text-slate-200" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <Badge :variant="diskHealth.variant">{{ diskHealth.label }}</Badge>
+                <span class="truncate text-[11px] text-muted-foreground">{{ data.dataDir }}</span>
               </div>
-              <div class="flex items-center justify-between gap-3">
-                <dt class="text-muted">Containers</dt>
-                <dd class="font-semibold">{{ docker.containers?.running ?? 0 }} / {{ docker.containers?.total ?? 0 }} running</dd>
-              </div>
-              <div class="flex items-center justify-between gap-3">
-                <dt class="text-muted">Store apps</dt>
-                <dd class="font-semibold">{{ data.store?.appCount ?? '—' }}</dd>
-              </div>
-              <div class="flex items-center justify-between gap-3">
-                <dt class="text-muted">Store updated</dt>
-                <dd class="font-semibold">{{ relativeTime(data.store?.updatedAt) }}</dd>
-              </div>
-            </dl>
-            <div v-if="!docker.available" class="mt-3 rounded-lg bg-coral-100 px-3 py-2 text-xs text-coral-500">
-              Start Docker and check that <code class="font-mono">/var/run/docker.sock</code> is reachable from the Cabana service.
+              <p class="mt-1 text-sm font-semibold">{{ formatBytes(host.disk?.used) }} used</p>
             </div>
           </div>
-
-          <div class="card overflow-hidden">
-            <div class="bg-cabana-900 px-5 py-4 text-white">
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-cabana-300">
-                <HardDrive class="size-3.5" /> {{ data.dataDir || '/DATA' }}
-              </div>
-              <p class="mt-2 text-2xl font-bold">{{ host.disk ? formatBytes(host.disk.used) : '—' }}</p>
-              <p class="text-xs text-cabana-200">{{ host.disk ? `${formatBytes(host.disk.available)} available · ${host.disk.percent}% used` : 'Unavailable' }}</p>
-            </div>
-            <div class="flex items-center justify-between px-5 py-3 text-sm">
-              <span class="text-muted">Storage overview</span>
-              <RouterLink :to="{ name: 'storage' }" class="font-semibold text-cabana-700 hover:underline">Inspect</RouterLink>
-            </div>
+          <Progress class="mt-4" :model-value="host.disk?.percent || 0" indicator-class="bg-chart-3" />
+          <div class="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
+            <span>{{ host.disk?.percent || 0 }}% of {{ formatBytes(host.disk?.total) }}</span>
+            <span>{{ formatBytes(host.disk?.available) }} free</span>
           </div>
-        </section>
+        </Card>
+
+        <Card class="p-5" data-testid="metric-network">
+          <div class="flex items-center justify-between">
+            <h2 class="font-semibold tracking-tight">Network status</h2>
+            <Badge variant="secondary">all interfaces</Badge>
+          </div>
+          <div class="mt-3 h-16 w-full overflow-hidden rounded-lg">
+            <svg viewBox="0 0 220 64" preserveAspectRatio="none" class="h-full w-full" aria-label="Recent network throughput">
+              <defs>
+                <linearGradient id="netFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="var(--chart-1)" stop-opacity="0.35" />
+                  <stop offset="1" stop-color="var(--chart-1)" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <line v-for="y in [16, 32, 48]" :key="y" x1="0" :y1="y" x2="220" :y2="y" stroke="rgba(255,255,255,0.07)" stroke-width="1" />
+              <path :d="networkArea" fill="url(#netFill)" />
+              <path :d="networkLine" fill="none" stroke="var(--chart-1)" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div class="mt-2 flex items-center justify-between text-xs">
+            <span class="flex items-center gap-1.5 text-emerald-300"><ArrowDown class="size-3.5" /> {{ formatRate(host.network.rxRate) }}</span>
+            <span class="flex items-center gap-1.5 text-primary"><ArrowUp class="size-3.5" /> {{ formatRate(host.network.txRate) }}</span>
+            <span class="text-muted-foreground">{{ formatBytes(host.network.rxBytes) }} in</span>
+          </div>
+        </Card>
+
+        <RouterLink
+          :to="{ name: 'settings' }"
+          class="flex items-center justify-between rounded-2xl border border-white/10 bg-white/6 px-5 py-3.5 text-sm font-semibold text-slate-200 backdrop-blur-xl transition hover:bg-white/10"
+        >
+          Widget settings
+          <ChevronRight class="size-4" />
+        </RouterLink>
       </div>
 
-      <div v-if="orphans?.length" class="rounded-xl border border-yellow-300/60 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-        <p class="font-semibold">Containers Cabana no longer tracks</p>
-        <p class="mt-1 text-xs">{{ orphans.map((o) => o.name).join(', ') }}. You can remove them with Docker if they are not needed.</p>
+      <div class="min-w-0">
+        <div class="flex items-center gap-3">
+          <div class="relative flex-1">
+            <Search class="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              v-model="search"
+              class="h-12 rounded-2xl border-white/12 bg-slate-950/35 pl-12 text-base backdrop-blur-xl"
+              placeholder="Search..."
+              aria-label="Search apps"
+              data-testid="dashboard-search"
+            />
+          </div>
+          <Button variant="secondary" size="icon" class="size-12 rounded-2xl" aria-label="Refresh dashboard" :disabled="refreshing" @click="load(true)">
+            <RefreshCw class="size-5" :class="{ 'animate-spin': refreshing }" />
+          </Button>
+        </div>
+
+        <div class="mb-3 mt-6 flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-semibold tracking-tight">App</h1>
+            <p class="text-xs text-muted-foreground">
+              {{ counts.running }} running · {{ counts.total }} installed
+            </p>
+          </div>
+          <Button variant="ghost" size="icon-sm" title="Install an app" @click="router.push({ name: 'store' })">
+            <Plus class="size-5" />
+          </Button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          <button
+            v-for="tile in tiles"
+            :key="tile.key"
+            type="button"
+            class="group relative flex aspect-[1.15/1] cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/14 to-white/5 p-3 text-center text-slate-100 shadow-xl shadow-black/10 backdrop-blur-xl transition duration-200 hover:-translate-y-0.5 hover:border-white/25 hover:from-white/20 hover:to-white/8"
+            :data-testid="tile.testid"
+            @click="openTile(tile)"
+          >
+            <span class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            <span
+              v-if="tile.status"
+              class="absolute right-3 top-3 size-2 rounded-full ring-2 ring-slate-900/50"
+              :class="tile.status === 'running' ? 'bg-emerald-400' : tile.status === 'stopped' ? 'bg-slate-500' : 'bg-amber-400'"
+              :title="tile.status"
+            />
+            <span
+              class="grid size-14 place-items-center rounded-2xl border border-white/10 shadow-inner shadow-white/5 transition group-hover:scale-105 sm:size-16"
+              :class="tile.tone"
+            >
+              <img v-if="tile.iconPath" :src="iconUrl(tile.iconPath)" alt="" class="size-9 object-contain sm:size-10" loading="lazy" />
+              <component v-else :is="tile.icon" class="size-7 sm:size-8" />
+            </span>
+            <span class="w-full truncate text-sm font-medium sm:text-[15px]">{{ tile.name }}</span>
+            <span v-if="tile.subtitle" class="w-full truncate text-[10px] text-muted-foreground">{{ tile.subtitle }}</span>
+          </button>
+        </div>
+
+        <div v-if="!tiles.length" class="mt-6 rounded-2xl border border-dashed border-white/15 bg-white/4 px-6 py-12 text-center backdrop-blur-xl">
+          <Search class="mx-auto size-8 text-muted-foreground" />
+          <p class="mt-3 font-semibold">No apps match “{{ search }}”</p>
+          <p class="mt-1 text-sm text-muted-foreground">Try a different name, or add an app from the store.</p>
+        </div>
+        <div v-else-if="!apps.length && !search" class="mt-5 rounded-2xl border border-dashed border-white/15 bg-white/4 px-6 py-6 text-center text-sm text-muted-foreground backdrop-blur-xl">
+          No apps installed yet. Use the <RouterLink :to="{ name: 'store' }" class="font-semibold text-primary hover:underline">App Store</RouterLink> to add one.
+        </div>
+
+        <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+          <span>Docker containers {{ docker.containers?.running ?? 0 }}/{{ docker.containers?.total ?? 0 }}</span>
+          <span class="text-white/20">·</span>
+          <span>{{ data.store?.appCount ?? '—' }} store apps</span>
+          <span class="text-white/20">·</span>
+          <span>{{ data.hostArch }} · Cabana {{ data.version }}</span>
+        </div>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import {
-  ArrowDownUp,
+  ArrowDown,
+  ArrowUp,
   Boxes,
   Container,
-  Cpu,
-  ExternalLink,
+  ChevronRight,
+  FolderOpen,
   HardDrive,
-  MemoryStick,
-  Play,
+  Plus,
   RefreshCw,
-  Square,
+  Search,
+  Settings2,
   Store,
+  Waves,
 } from 'lucide-vue-next';
-import MetricCard from '../components/MetricCard.vue';
-import AppStatusBadge from '../components/AppStatusBadge.vue';
-import { api, appUrl, formatBytes, formatRate, formatUptime, iconUrl, relativeTime } from '../lib/api.js';
-import { toast } from '../lib/toast.js';
-import { session } from '../session.js';
+import Badge from '../components/ui/badge/Badge.vue';
+import Button from '../components/ui/button/Button.vue';
+import Card from '../components/ui/card/Card.vue';
+import Input from '../components/ui/input/Input.vue';
+import Progress from '../components/ui/progress/Progress.vue';
+import Skeleton from '../components/ui/skeleton/Skeleton.vue';
+import RingMetric from '../components/dashboard/RingMetric.vue';
+import { api, appUrl, formatBytes, formatRate, formatUptime, iconUrl } from '../lib/api.js';
 
+const router = useRouter();
 const data = ref(null);
 const refreshing = ref(false);
 const error = ref('');
-let timer = null;
+const search = ref('');
+const now = ref(new Date());
+const history = ref([]);
+let pollTimer = null;
+let clockTimer = null;
 
 const host = computed(() => data.value?.host || {
+  hostname: '',
+  uptime: 0,
   cpu: { usagePercent: 0, cores: 0, load1: 0 },
   memory: { used: 0, total: 0, percent: 0 },
   disk: null,
-  network: { rxRate: 0, txRate: 0, rxBytes: 0 },
-  uptime: 0,
+  network: { rxRate: 0, txRate: 0, rxBytes: 0, txBytes: 0 },
 });
 const docker = computed(() => data.value?.docker || { available: false });
-const apps = computed(() => data.value?.apps?.recent || []);
+const apps = computed(() => data.value?.apps?.items || data.value?.apps?.recent || []);
 const counts = computed(() => data.value?.apps?.counts || { running: 0, stopped: 0, total: 0 });
-const orphans = computed(() => data.value?.orphans || []);
-const greeting = computed(() => {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 18) return 'Good afternoon';
-  return 'Good evening';
+
+const clockTime = computed(() => new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }).format(now.value));
+const clockDate = computed(() => new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(now.value));
+
+const diskHealth = computed(() => {
+  const percent = host.value.disk?.percent || 0;
+  if (percent >= 90) return { label: 'Critical', variant: 'destructive' };
+  if (percent >= 75) return { label: 'Attention', variant: 'warning' };
+  return { label: 'Healthy', variant: 'success' };
 });
+
+const shortcuts = [
+  { key: 'store', name: 'App Store', icon: Store, to: 'store', tone: 'bg-gradient-to-br from-blue-500/70 to-indigo-500/50 text-white' },
+  { key: 'files', name: 'Files', icon: FolderOpen, to: 'files', tone: 'bg-gradient-to-br from-amber-400/60 to-orange-500/40 text-amber-50' },
+  { key: 'apps', name: 'My Apps', icon: Boxes, to: 'apps', tone: 'bg-gradient-to-br from-cyan-400/50 to-teal-500/40 text-cyan-50' },
+  { key: 'storage', name: 'Storage', icon: HardDrive, to: 'storage', tone: 'bg-gradient-to-br from-violet-400/50 to-purple-500/40 text-violet-50' },
+];
+
+const tiles = computed(() => {
+  const query = search.value.trim().toLowerCase();
+  const shortcutTiles = shortcuts
+    .filter((item) => !query || item.name.toLowerCase().includes(query))
+    .map((item) => ({ ...item, testid: `dashboard-shortcut-${item.key}` }));
+  const appTiles = apps.value
+    .filter((app) => !query || `${app.title} ${app.id} ${app.storeId || ''}`.toLowerCase().includes(query))
+    .map((app) => ({
+      key: `app-${app.id}`,
+      name: app.title,
+      subtitle: app.status === 'running' ? 'Running' : app.status,
+      iconPath: app.iconPath,
+      icon: Boxes,
+      tone: 'bg-white/8',
+      status: app.status,
+      app,
+      to: app.status === 'running' && app.port ? null : 'apps',
+      testid: `dashboard-app-${app.id}`,
+    }));
+  return [...shortcutTiles, ...appTiles];
+});
+
+const networkPoints = computed(() => {
+  const values = history.value.length ? history.value : [{ rx: host.value.network.rxRate, tx: host.value.network.txRate }];
+  const max = Math.max(1024, ...values.map((point) => Math.max(point.rx, point.tx)));
+  return values.map((point, index) => ({
+    x: values.length === 1 ? 0 : (index / (values.length - 1)) * 220,
+    rx: 56 - (point.rx / max) * 48,
+    tx: 56 - (point.tx / max) * 48,
+  }));
+});
+const networkLine = computed(() => networkPoints.value.map((point, index) => `${index === 0 ? 'M' : 'L'}${point.x.toFixed(1)},${point.rx.toFixed(1)}`).join(' '));
+const networkArea = computed(() => `${networkLine.value} L220,64 L0,64 Z`);
+
+function openTile(tile) {
+  if (tile.app) {
+    if (tile.app.status === 'running' && tile.app.port) {
+      window.open(appUrl(tile.app), '_blank', 'noopener,noreferrer');
+    } else {
+      router.push({ name: 'apps' });
+    }
+    return;
+  }
+  router.push({ name: tile.to });
+}
 
 async function load(manual = false) {
   if (manual) refreshing.value = true;
   try {
     data.value = await api('/dashboard');
+    const net = data.value.host?.network;
+    if (net) {
+      history.value = [...history.value, { rx: net.rxRate || 0, tx: net.txRate || 0 }].slice(-24);
+    }
     error.value = '';
   } catch (err) {
     error.value = err.message;
@@ -248,19 +336,13 @@ async function load(manual = false) {
   }
 }
 
-async function action(app, verb) {
-  try {
-    await api(`/apps/${encodeURIComponent(app.id)}/${verb}`, { method: 'POST' });
-    toast(`${app.title} ${verb === 'start' ? 'started' : 'stopped'}.`);
-    await load();
-  } catch (err) {
-    toast(err.message, 'error', 8000);
-  }
-}
-
 onMounted(() => {
   load();
-  timer = setInterval(() => load(), 5000);
+  pollTimer = setInterval(() => load(), 5000);
+  clockTimer = setInterval(() => { now.value = new Date(); }, 1000);
 });
-onBeforeUnmount(() => clearInterval(timer));
+onBeforeUnmount(() => {
+  clearInterval(pollTimer);
+  clearInterval(clockTimer);
+});
 </script>

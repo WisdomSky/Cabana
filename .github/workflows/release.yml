@@ -34,6 +34,8 @@ jobs:
           tar -tzf release/cabana-app.tar.gz | grep -q 'cabana-app/server.cjs'
           tar -tzf release/cabana-app.tar.gz | grep -q 'cabana-app/web/dist/index.html'
           tar -tzf release/cabana-app.tar.gz | grep -q 'cabana-app/VERSION'
+          test -s release/uninstall.sh
+          test -s release/install.sh
           cd release && sha256sum -c cabana-app.tar.gz.sha256
       - name: Publish release
         env:
@@ -43,7 +45,8 @@ jobs:
             gh release upload "${GITHUB_REF_NAME}" \
               release/cabana-app.tar.gz \
               release/cabana-app.tar.gz.sha256 \
-              release/install.sh --clobber
+              release/install.sh \
+              release/uninstall.sh --clobber
             gh release edit "${GITHUB_REF_NAME}" --notes-file docs/RELEASE_NOTES.md
           else
             PREFLAG=""
@@ -52,6 +55,7 @@ jobs:
               release/cabana-app.tar.gz \
               release/cabana-app.tar.gz.sha256 \
               release/install.sh \
+              release/uninstall.sh \
               --title "Cabana ${GITHUB_REF_NAME}" \
               --notes-file docs/RELEASE_NOTES.md $PREFLAG
           fi

@@ -1,12 +1,13 @@
 <template>
-  <span class="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-bold capitalize" :class="classes">
+  <Badge :variant="variant">
     <span class="size-1.5 rounded-full" :class="dot" />
     {{ label }}
-  </span>
+  </Badge>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+import Badge from './ui/badge/Badge.vue';
 
 const props = defineProps({ status: { type: String, default: 'missing' }, health: { type: String, default: null } });
 
@@ -16,16 +17,16 @@ const label = computed(() => {
   }
   return props.status;
 });
-const classes = computed(() => {
-  if (props.status === 'running') return 'bg-cabana-100 text-cabana-700';
-  if (props.status === 'stopped') return 'bg-sand-100 text-muted';
-  if (props.status === 'error') return 'bg-coral-100 text-coral-500';
-  return 'bg-yellow-50 text-yellow-700';
+const variant = computed(() => {
+  if (props.status === 'running') return props.health === 'unhealthy' ? 'destructive' : props.health === 'starting' ? 'warning' : 'success';
+  if (props.status === 'stopped') return 'secondary';
+  if (props.status === 'error') return 'destructive';
+  return 'warning';
 });
 const dot = computed(() => {
-  if (props.status === 'running') return props.health === 'unhealthy' ? 'bg-coral-500' : 'bg-cabana-500';
-  if (props.status === 'stopped') return 'bg-sand-300';
-  if (props.status === 'error') return 'bg-coral-500';
-  return 'bg-yellow-500';
+  if (props.status === 'running') return props.health === 'unhealthy' ? 'bg-red-300' : props.health === 'starting' ? 'bg-amber-300' : 'bg-emerald-300';
+  if (props.status === 'stopped') return 'bg-slate-400';
+  if (props.status === 'error') return 'bg-red-300';
+  return 'bg-amber-300';
 });
 </script>

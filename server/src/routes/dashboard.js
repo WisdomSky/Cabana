@@ -43,6 +43,7 @@ export function dashboardRoutes({ hostMetrics, docker, apps, store, settings, co
       },
       apps: {
         counts,
+        items: list.apps,
         recent: list.apps.slice(-6).reverse(),
       },
       orphans: list.orphans,

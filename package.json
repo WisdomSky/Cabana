@@ -1,6 +1,6 @@
 {
   "name": "cabana",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
   "description": "Cabana - an independent CasaOS-style personal cloud server for home Linux machines",
   "license": "MIT",
@@ -14,6 +14,8 @@
     "build": "npm --prefix web run build && npm --prefix server run build",
     "test": "npm --prefix server test",
     "test:e2e": "npm --prefix e2e test",
+    "docker": "bash scripts/docker-run.sh",
+    "docker:stop": "bash scripts/docker-stop.sh",
     "release:bundle": "bash scripts/build-release.sh"
   }
 }

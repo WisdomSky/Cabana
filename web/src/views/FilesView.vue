@@ -2,43 +2,43 @@
   <div class="space-y-5">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-cabana-600">Files</p>
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-primary">Files</p>
         <h1 class="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Your data, close at hand</h1>
         <p class="mt-1 text-sm text-muted">Browse and manage files inside the roots configured by the administrator.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button class="btn-secondary btn-sm" data-testid="files-refresh" :disabled="loading" @click="load">
+        <Button variant="secondary" size="sm" data-testid="files-refresh" :disabled="loading" @click="load">
           <RefreshCw class="size-3.5" :class="{ 'animate-spin': loading }" /> Refresh
-        </button>
-        <button class="btn-secondary btn-sm" data-testid="mkdir-button" @click="openMkdir">
+        </Button>
+        <Button variant="secondary" size="sm" data-testid="mkdir-button" @click="openMkdir">
           <FolderPlus class="size-3.5" /> New folder
-        </button>
-        <button class="btn-primary btn-sm" data-testid="upload-button" :disabled="uploading" @click="fileInput?.click()">
+        </Button>
+        <Button size="sm" data-testid="upload-button" :disabled="uploading" @click="fileInput?.click()">
           <Loader2 v-if="uploading" class="size-3.5 animate-spin" />
           <Upload v-else class="size-3.5" />
           {{ uploading ? 'Uploading…' : 'Upload' }}
-        </button>
+        </Button>
         <input ref="fileInput" type="file" class="hidden" data-testid="upload-input" @change="onUpload" />
       </div>
     </div>
 
-    <div class="card overflow-hidden">
-      <div class="flex flex-wrap items-center gap-2 border-b border-sand-200 px-3 py-3 sm:px-4">
-        <select v-model="rootId" class="input w-auto max-w-full py-1.5 text-xs" data-testid="files-root-select" @change="changeRoot">
+    <Card class="overflow-hidden">
+      <div class="flex flex-col gap-2 border-b border-white/10 px-3 py-3 sm:flex-row sm:items-center sm:px-4">
+        <Select v-model="rootId" class="w-full text-xs sm:w-auto sm:max-w-[260px]" data-testid="files-root-select" @change="changeRoot">
           <option v-for="root in roots" :key="root.id" :value="String(root.id)">{{ root.path }}</option>
-        </select>
-        <nav class="flex min-w-0 flex-1 flex-wrap items-center gap-1 text-sm" aria-label="Breadcrumb" data-testid="files-breadcrumb">
-          <button class="rounded px-1.5 py-0.5 font-semibold text-cabana-700 hover:bg-sand-100" @click="navigate('')">
-            {{ currentRoot?.path || 'root' }}
+        </Select>
+        <nav class="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto whitespace-nowrap text-sm" aria-label="Breadcrumb" data-testid="files-breadcrumb">
+          <button class="shrink-0 rounded px-1.5 py-0.5 font-semibold text-primary hover:bg-white/8" @click="navigate('')">
+            {{ rootName }}
           </button>
-          <template v-for="(crumb, index) in breadcrumbs" :key="crumb.path">
-            <ChevronRight class="size-3.5 text-muted" />
-            <button class="rounded px-1.5 py-0.5 hover:bg-sand-100" @click="navigate(crumb.path)">
+          <template v-for="crumb in breadcrumbs" :key="crumb.path">
+            <ChevronRight class="size-3.5 shrink-0 text-muted-foreground" />
+            <button class="shrink-0 rounded px-1.5 py-0.5 hover:bg-white/8" @click="navigate(crumb.path)">
               {{ crumb.name }}
             </button>
           </template>
         </nav>
-        <span class="chip">{{ entries.length }} item{{ entries.length === 1 ? '' : 's' }}</span>
+        <Badge variant="secondary" class="hidden shrink-0 sm:inline-flex">{{ entries.length }} item{{ entries.length === 1 ? '' : 's' }}</Badge>
       </div>
 
       <div v-if="error" class="px-4 py-3 text-sm text-coral-500">{{ error }}</div>
@@ -74,7 +74,7 @@
                   <Link2 v-else class="size-4 shrink-0" :class="entry.escape ? 'text-coral-500' : 'text-muted'" />
                   <button
                     v-if="entry.type === 'directory' || (entry.type === 'symlink' && !entry.escape)"
-                    class="truncate text-left font-medium hover:text-cabana-700 hover:underline"
+                    class="truncate text-left font-medium hover:text-primary hover:underline"
                     @click="navigate(entry.path)"
                   >
                     {{ entry.name }}
@@ -82,7 +82,7 @@
                   <a
                     v-else-if="entry.type === 'file'"
                     :href="downloadUrl(entry.path)"
-                    class="truncate font-medium hover:text-cabana-700 hover:underline"
+                    class="truncate font-medium hover:text-primary hover:underline"
                     :data-testid="`download-${entry.name}`"
                   >
                     {{ entry.name }}
@@ -126,7 +126,7 @@
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
 
     <p class="text-xs leading-relaxed text-muted">
       <ShieldCheck class="mr-1 inline size-3.5 text-cabana-500" />
@@ -135,22 +135,22 @@
     </p>
 
     <Modal :open="mkdirOpen" title="New folder" subtitle="Create a folder in the current directory." @close="mkdirOpen = false">
-      <label class="label" for="mkdir-name">Folder name</label>
-      <input id="mkdir-name" v-model.trim="mkdirName" class="input" data-testid="mkdir-name" @keyup.enter="createFolder" />
+      <Label for="mkdir-name">Folder name</Label>
+      <Input id="mkdir-name" v-model.trim="mkdirName" data-testid="mkdir-name" @keyup.enter="createFolder" />
       <p v-if="dialogError" class="mt-2 text-sm text-coral-500">{{ dialogError }}</p>
       <template #footer>
-        <button class="btn-secondary" @click="mkdirOpen = false">Cancel</button>
-        <button class="btn-primary" :disabled="working" data-testid="mkdir-confirm" @click="createFolder">Create folder</button>
+        <Button variant="secondary" @click="mkdirOpen = false">Cancel</Button>
+        <Button :disabled="working" data-testid="mkdir-confirm" @click="createFolder">Create folder</Button>
       </template>
     </Modal>
 
     <Modal :open="Boolean(renameEntry)" title="Rename" :subtitle="renameEntry?.path" @close="renameEntry = null">
-      <label class="label" for="rename-name">New name</label>
-      <input id="rename-name" v-model.trim="renameName" class="input" data-testid="rename-name" @keyup.enter="rename" />
+      <Label for="rename-name">New name</Label>
+      <Input id="rename-name" v-model.trim="renameName" data-testid="rename-name" @keyup.enter="rename" />
       <p v-if="dialogError" class="mt-2 text-sm text-coral-500">{{ dialogError }}</p>
       <template #footer>
-        <button class="btn-secondary" @click="renameEntry = null">Cancel</button>
-        <button class="btn-primary" :disabled="working" data-testid="rename-confirm" @click="rename">Rename</button>
+        <Button variant="secondary" @click="renameEntry = null">Cancel</Button>
+        <Button :disabled="working" data-testid="rename-confirm" @click="rename">Rename</Button>
       </template>
     </Modal>
 
@@ -164,8 +164,8 @@
       </label>
       <p v-if="dialogError" class="mt-2 text-sm text-coral-500">{{ dialogError }}</p>
       <template #footer>
-        <button class="btn-secondary" @click="deleteEntry = null">Cancel</button>
-        <button class="btn-danger" :disabled="working" data-testid="delete-confirm" @click="removeEntry">Delete</button>
+        <Button variant="secondary" @click="deleteEntry = null">Cancel</Button>
+        <Button variant="destructive" :disabled="working" data-testid="delete-confirm" @click="removeEntry">Delete</Button>
       </template>
     </Modal>
   </div>
@@ -188,7 +188,13 @@ import {
   Trash2,
   Upload,
 } from 'lucide-vue-next';
-import Modal from '../components/Modal.vue';
+import Modal from '../components/ui/dialog/Dialog.vue';
+import Button from '../components/ui/button/Button.vue';
+import Card from '../components/ui/card/Card.vue';
+import Input from '../components/ui/input/Input.vue';
+import Label from '../components/ui/label/Label.vue';
+import Badge from '../components/ui/badge/Badge.vue';
+import Select from '../components/ui/select/Select.vue';
 import { api, formatBytes } from '../lib/api.js';
 import { toast } from '../lib/toast.js';
 
@@ -211,6 +217,10 @@ const dialogError = ref('');
 const working = ref(false);
 
 const currentRoot = computed(() => roots.value.find((r) => r.id === rootId.value));
+const rootName = computed(() => {
+  const value = currentRoot.value?.path || 'root';
+  return value.split('/').filter(Boolean).pop() || value;
+});
 const breadcrumbs = computed(() => {
   const segments = path.value.split('/').filter(Boolean);
   let cumulative = '';

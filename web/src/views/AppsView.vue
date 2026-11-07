@@ -2,7 +2,7 @@
   <div class="space-y-5">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-cabana-600">My apps</p>
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-primary">My apps</p>
         <h1 class="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Installed applications</h1>
         <p class="mt-1 text-sm text-muted">
           {{ counts.running }} running · {{ counts.stopped }} stopped · {{ counts.total }} installed
@@ -10,12 +10,12 @@
         </p>
       </div>
       <div class="flex gap-2">
-        <button class="btn-secondary btn-sm" :disabled="loading" @click="load(true)">
+        <Button variant="secondary" size="sm" :disabled="loading" @click="load(true)">
           <RefreshCw class="size-3.5" :class="{ 'animate-spin': loading }" /> Refresh
-        </button>
-        <button class="btn-primary btn-sm" data-testid="import-compose" @click="openImport">
+        </Button>
+        <Button size="sm" data-testid="import-compose" @click="openImport">
           <FilePlus2 class="size-3.5" /> Import Compose
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -23,30 +23,30 @@
       {{ error }}
     </div>
 
-    <div v-if="orphans.length" class="rounded-xl border border-yellow-300/60 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+    <div v-if="orphans.length" class="rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
       <p class="font-semibold">Untracked Cabana containers</p>
       <p class="mt-1 text-xs">{{ orphans.map((o) => `${o.name} (${o.state})`).join(', ') }}</p>
     </div>
 
     <div v-if="loading && !apps.length" class="grid gap-4">
-      <div v-for="i in 2" :key="i" class="card h-28 animate-pulse bg-white/60" />
+      <div v-for="i in 2" :key="i" class="card h-28 animate-pulse bg-white/5" />
     </div>
 
-    <div v-else-if="!apps.length" class="card p-10 text-center">
+    <Card v-else-if="!apps.length" class="p-10 text-center">
       <Boxes class="mx-auto size-10 text-cabana-300" />
       <p class="mt-3 font-semibold">Nothing installed yet</p>
       <p class="mt-1 text-sm text-muted">Install an app from the store, or import your own Compose file.</p>
       <div class="mt-5 flex justify-center gap-2">
         <RouterLink :to="{ name: 'store' }" class="btn-primary btn-sm">Browse store</RouterLink>
-        <button class="btn-secondary btn-sm" @click="openImport">Import Compose</button>
+        <Button variant="secondary" size="sm" @click="openImport">Import Compose</Button>
       </div>
-    </div>
+    </Card>
 
     <div v-else class="space-y-3">
-      <article
+      <Card
         v-for="app in apps"
         :key="app.id"
-        class="card p-4"
+        class="p-4"
         :data-testid="`app-row-${app.id}`"
       >
         <div class="flex flex-wrap items-start gap-3">
@@ -54,9 +54,9 @@
             v-if="app.iconPath"
             :src="iconUrl(app.iconPath)"
             alt=""
-            class="size-11 rounded-xl border border-sand-200 bg-white object-contain p-1"
+            class="size-11 rounded-xl border border-white/10 bg-white/8 object-contain p-1"
           />
-          <div v-else class="grid size-11 place-items-center rounded-xl bg-cabana-100 text-sm font-bold uppercase text-cabana-700">
+          <div v-else class="grid size-11 place-items-center rounded-xl border border-white/10 bg-white/8 text-sm font-bold uppercase text-primary">
             {{ app.title.slice(0, 2) }}
           </div>
           <div class="min-w-0 flex-1">
@@ -83,40 +83,40 @@
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-1.5">
-            <a
-              v-if="app.status === 'running' && app.port"
-              :href="appUrl(app)"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="btn-secondary btn-sm"
-            >
-              <ExternalLink class="size-3.5" /> Open
-            </a>
-            <button
+            <Button v-if="app.status === 'running' && app.port" variant="secondary" size="sm" as-child>
+              <a :href="appUrl(app)" target="_blank" rel="noopener noreferrer">
+                <ExternalLink class="size-3.5" /> Open
+              </a>
+            </Button>
+            <Button
               v-if="app.status === 'stopped' || app.status === 'error' || app.status === 'missing'"
-              class="btn-secondary btn-sm"
+              variant="secondary"
+              size="sm"
               :data-testid="`start-${app.id}`"
               :disabled="busy === app.id"
               @click="action(app, 'start')"
             >
               <Play class="size-3.5" /> Start
-            </button>
-            <button
+            </Button>
+            <Button
               v-else-if="app.status === 'running'"
-              class="btn-secondary btn-sm"
+              variant="secondary"
+              size="sm"
               :data-testid="`stop-${app.id}`"
               :disabled="busy === app.id"
               @click="action(app, 'stop')"
             >
               <Square class="size-3.5" /> Stop
-            </button>
-            <button
-              class="btn-ghost btn-sm text-coral-500 hover:bg-coral-100"
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              class="text-red-300 hover:bg-red-400/10 hover:text-red-200"
               :data-testid="`uninstall-${app.id}`"
               @click="askUninstall(app)"
             >
               <Trash2 class="size-3.5" /> Uninstall
-            </button>
+            </Button>
           </div>
         </div>
         <div v-if="app.warnings?.length" class="mt-3 border-t border-sand-100 pt-2">
@@ -127,21 +127,21 @@
             </ul>
           </details>
         </div>
-      </article>
+      </Card>
     </div>
 
     <Modal :open="importOpen" title="Import a Compose file" subtitle="Run your own Docker Compose definition under Cabana." @close="closeImport">
       <div class="space-y-4">
         <div>
-          <label class="label" for="import-title">App name</label>
-          <input id="import-title" v-model.trim="importTitle" class="input" placeholder="My custom app" data-testid="custom-title" />
+          <Label for="import-title">App name</Label>
+          <Input id="import-title" v-model.trim="importTitle" placeholder="My custom app" data-testid="custom-title" />
         </div>
         <div>
-          <label class="label" for="import-compose">docker-compose.yml</label>
-          <textarea
+          <Label for="import-compose">docker-compose.yml</Label>
+          <Textarea
             id="import-compose"
             v-model="importCompose"
-            class="input min-h-56 font-mono text-xs leading-relaxed"
+            class="min-h-56 font-mono text-xs leading-relaxed"
             spellcheck="false"
             placeholder="services:&#10;  my-app:&#10;    image: nginx:alpine&#10;    ports:&#10;      - '8080:80'"
             data-testid="custom-compose"
@@ -151,7 +151,7 @@
           </p>
         </div>
 
-        <div v-if="analysis" class="space-y-3 rounded-xl border border-sand-200 bg-white p-4" data-testid="custom-analysis">
+        <div v-if="analysis" class="space-y-3 rounded-xl border border-white/10 bg-white/5 p-4" data-testid="custom-analysis">
           <div class="flex flex-wrap gap-2 text-xs text-muted">
             <span class="chip">id: {{ analysis.id }}</span>
             <span class="chip">port: {{ analysis.port || 'none' }}</span>
@@ -162,7 +162,7 @@
               v-for="(warning, i) in analysis.warnings"
               :key="i"
               class="rounded-lg px-2.5 py-2 text-xs leading-relaxed"
-              :class="dangerous(warning) ? 'bg-coral-100 text-coral-500' : 'bg-amber-50 text-amber-900'"
+              :class="dangerous(warning) ? 'bg-red-400/10 text-red-200' : 'bg-amber-400/10 text-amber-200'"
             >
               {{ warning.message }}
             </li>
@@ -176,24 +176,23 @@
         <div v-if="importError" class="rounded-xl border border-coral-500/30 bg-coral-100 px-4 py-3 text-sm text-coral-500" data-testid="custom-error">
           <p class="font-semibold">Could not install</p>
           <p class="mt-1 whitespace-pre-line text-xs">{{ importError }}</p>
-          <pre v-if="importDetails" class="mt-2 max-h-36 overflow-auto whitespace-pre-wrap rounded bg-white/70 p-2 font-mono text-[10px]">{{ importDetails }}</pre>
+          <pre v-if="importDetails" class="mt-2 max-h-36 overflow-auto whitespace-pre-wrap rounded bg-black/30 p-2 font-mono text-[10px]">{{ importDetails }}</pre>
         </div>
       </div>
       <template #footer>
-        <button class="btn-secondary" @click="closeImport">Cancel</button>
-        <button v-if="!analysis" class="btn-primary" :disabled="analyzing" data-testid="custom-analyze" @click="analyze">
+        <Button variant="secondary" @click="closeImport">Cancel</Button>
+        <Button v-if="!analysis" :disabled="analyzing" data-testid="custom-analyze" @click="analyze">
           <Loader2 v-if="analyzing" class="size-4 animate-spin" /> Analyze
-        </button>
-        <button
+        </Button>
+        <Button
           v-else
-          class="btn-primary"
           :disabled="installing || (analysis.needsConfirmation && !riskConfirmed)"
           data-testid="custom-install"
           @click="installCustom"
         >
           <Loader2 v-if="installing" class="size-4 animate-spin" />
           {{ installing ? 'Installing…' : 'Install app' }}
-        </button>
+        </Button>
       </template>
     </Modal>
 
@@ -202,7 +201,7 @@
         <p class="text-sm leading-relaxed">
           This removes the app’s containers and networks. App data is <strong>kept</strong> by default.
         </p>
-        <div class="rounded-xl border border-sand-200 bg-white p-3 text-xs leading-relaxed text-muted">
+        <div class="rounded-xl border border-white/10 bg-white/5 p-3 text-xs leading-relaxed text-muted">
           Data lives in <code class="rounded bg-sand-100 px-1 py-0.5 font-mono">/DATA/AppData/{{ uninstallApp?.id }}</code>
           plus any folders the app mounts under <code class="font-mono">/DATA</code>.
         </div>
@@ -216,11 +215,11 @@
         <p v-if="uninstallError" class="rounded-xl bg-coral-100 px-3 py-2 text-sm text-coral-500">{{ uninstallError }}</p>
       </div>
       <template #footer>
-        <button class="btn-secondary" @click="uninstallApp = null">Cancel</button>
-        <button class="btn-danger" :disabled="uninstalling" data-testid="uninstall-confirm" @click="uninstall">
+        <Button variant="secondary" @click="uninstallApp = null">Cancel</Button>
+        <Button variant="destructive" :disabled="uninstalling" data-testid="uninstall-confirm" @click="uninstall">
           <Loader2 v-if="uninstalling" class="size-4 animate-spin" />
           {{ deleteData ? 'Delete app and data' : 'Uninstall and keep data' }}
-        </button>
+        </Button>
       </template>
     </Modal>
   </div>
@@ -239,7 +238,12 @@ import {
   Square,
   Trash2,
 } from 'lucide-vue-next';
-import Modal from '../components/Modal.vue';
+import Modal from '../components/ui/dialog/Dialog.vue';
+import Button from '../components/ui/button/Button.vue';
+import Card from '../components/ui/card/Card.vue';
+import Input from '../components/ui/input/Input.vue';
+import Label from '../components/ui/label/Label.vue';
+import Textarea from '../components/ui/textarea/Textarea.vue';
 import AppStatusBadge from '../components/AppStatusBadge.vue';
 import { api, appUrl, iconUrl } from '../lib/api.js';
 import { toast } from '../lib/toast.js';

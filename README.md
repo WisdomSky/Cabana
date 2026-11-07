@@ -4,7 +4,7 @@ An independent, CasaOS-style personal cloud server for home Linux machines. Caba
 you a real host dashboard, a catalog of self-hosted apps sourced from the official
 CasaOS/ZimaOS app store, a Docker app manager, a confined file browser, storage reporting,
 and a first-run administrator flow — built from scratch and not affiliated with CasaOS or
-ZimaOS.
+ZimaOS. The interface uses shadcn-vue components with a CasaOS-inspired desktop layout.
 
 ```bash
 curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/install.sh | sudo bash
@@ -15,7 +15,8 @@ There are no default credentials.
 
 ## What you get
 
-- **Dashboard** with real CPU, memory, disk, network, Docker, and app status.
+- **Dashboard** in a CasaOS-inspired layout: clock, real CPU/RAM rings, storage, network
+  history, live app tiles, and search.
 - **App store** backed by the official published CasaOS/ZimaOS v2 index, with search,
   categories, architecture filtering, relative compose/meta/asset resolution, and caching.
 - **One-click app lifecycle**: install, start, stop, and uninstall store apps. Docker state
@@ -33,6 +34,10 @@ There are no default credentials.
   or partitions disks.
 - **Settings** for the administrator password, PUID/PGID/timezone, file roots, and store
   refresh.
+- **Safe uninstaller** with interactive defaults that keep app data and Docker unless
+  explicitly chosen otherwise.
+- **`npm run docker`** local test mode: builds and runs Cabana in a container using the host
+  Docker socket, without installing anything into the host OS.
 
 ## Supported systems
 
@@ -65,6 +70,51 @@ systemctl status cabana
 journalctl -u cabana -f
 ```
 
+## Uninstall
+
+Download the uninstaller first so its interactive prompts can read a terminal:
+
+```bash
+curl -fsSL https://github.com/WisdomSky/Cabana/releases/latest/download/uninstall.sh -o /tmp/cabana-uninstall.sh
+sudo bash /tmp/cabana-uninstall.sh
+```
+
+It asks separately whether to remove:
+
+- Cabana state (`/var/lib/cabana`) and Cabana app data (`/DATA/AppData`) — default **no**;
+- Docker Engine and **all** Docker containers, images, volumes, and networks — default **no**.
+
+Both answers default to no, so simply pressing Enter keeps data and Docker. For automation:
+
+```bash
+sudo bash /tmp/cabana-uninstall.sh --yes                    # remove Cabana, keep data and Docker
+sudo bash /tmp/cabana-uninstall.sh --yes --remove-data      # also remove Cabana state/AppData
+sudo bash /tmp/cabana-uninstall.sh --yes --remove-docker    # also remove Docker + all Docker data
+```
+
+`--remove-docker` destroys every Docker workload on the host. Other files in `/DATA` outside
+`AppData` are retained.
+
+## Local testing in Docker
+
+From a development checkout, without installing Cabana or Node on the host:
+
+```bash
+npm run docker
+# open http://127.0.0.1:8080
+```
+
+The script builds a local image, mounts `.cabana-docker/` for state and app data, and passes
+the host Docker socket into the container so store/custom apps are published on the host for
+testing. It does not install host packages. Stop it without deleting data:
+
+```bash
+npm run docker:stop
+```
+
+This is a development convenience with root-equivalent Docker socket access; do not expose it
+to untrusted users. Override the port with `CABANA_DOCKER_PORT=8090 npm run docker`.
+
 ## Evidence
 
 Full commands, environment versions, timestamps, and outcomes are in
@@ -90,6 +140,13 @@ Full commands, environment versions, timestamps, and outcomes are in
   unsupported Fedora refusal, non-root refusal, safe rerun, and rollback path.
 
 Screenshots: [`docs/screenshots`](docs/screenshots).
+
+## Technology
+
+- Backend: Node.js 24+ / Express / `node:sqlite`
+- Frontend: Vue 3 / shadcn-vue components (Reka UI) / Tailwind CSS 4 / Vite
+- Apps: Docker Compose via the server-side Docker CLI
+- Store: official CasaOS/ZimaOS v2 index from jsDelivr
 
 ## Security model
 

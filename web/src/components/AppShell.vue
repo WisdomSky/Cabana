@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-sand-50">
-    <aside class="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-cabana-950 text-white lg:flex">
+  <div class="min-h-screen">
+    <aside class="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/10 bg-cabana-950/70 text-white backdrop-blur-2xl lg:flex">
       <div class="flex items-center gap-3 px-5 pb-5 pt-6">
-        <div class="grid size-10 place-items-center rounded-xl bg-cabana-800 ring-1 ring-white/10">
+        <div class="grid size-10 place-items-center rounded-2xl bg-white/8 ring-1 ring-white/10">
           <svg viewBox="0 0 64 64" class="size-7" aria-hidden="true">
             <path d="M14 41c9 7 27 7 36 0" stroke="#7fd8cc" stroke-width="4" stroke-linecap="round" fill="none" />
             <path d="M20 36c0-11 5-19 13-24-2 8-1 15 2 21" stroke="#f6f0e3" stroke-width="4" stroke-linecap="round" fill="none" />
@@ -11,7 +11,7 @@
         </div>
         <div>
           <p class="text-lg font-bold leading-none tracking-tight">Cabana</p>
-          <p class="mt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-cabana-300">personal cloud</p>
+          <p class="mt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">personal cloud</p>
         </div>
       </div>
 
@@ -31,79 +31,79 @@
 
       <div class="border-t border-white/10 p-3">
         <div class="flex items-center gap-2 rounded-xl px-2 py-2">
-          <div class="grid size-8 place-items-center rounded-lg bg-cabana-800 text-xs font-bold uppercase text-cabana-200">
-            {{ initials }}
-          </div>
+          <Avatar :name="session.user?.username || 'A'" class="size-8 rounded-lg text-[10px]" />
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-semibold">{{ session.user?.username }}</p>
-            <p class="text-[11px] text-cabana-300">Administrator</p>
+            <p class="text-[11px] text-slate-400">Administrator</p>
           </div>
-          <button class="rounded-lg p-1.5 text-cabana-200 hover:bg-white/10 hover:text-white" title="Sign out" data-testid="logout-button" @click="logout">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            class="text-slate-300 hover:text-white"
+            title="Sign out"
+            data-testid="logout-button"
+            @click="logout"
+          >
             <LogOut class="size-4" />
-          </button>
+          </Button>
         </div>
-        <p class="px-2 pt-2 text-[10px] leading-relaxed text-cabana-300/60">
+        <p class="px-2 pt-2 text-[10px] leading-relaxed text-slate-500">
           Cabana {{ version }} · independent project, not affiliated with CasaOS or ZimaOS.
         </p>
       </div>
     </aside>
 
     <div class="lg:pl-64">
-      <header class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-sand-200 bg-sand-50/90 px-4 backdrop-blur lg:hidden">
-        <button class="rounded-lg p-2 text-ink hover:bg-sand-100" aria-label="Open menu" data-testid="mobile-menu" @click="menuOpen = true">
+      <header class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-white/10 bg-background/45 px-4 backdrop-blur-xl lg:hidden">
+        <Button variant="ghost" size="icon-sm" aria-label="Open menu" data-testid="mobile-menu" @click="menuOpen = true">
           <Menu class="size-5" />
-        </button>
+        </Button>
         <div class="flex items-center gap-2">
-          <div class="grid size-7 place-items-center rounded-lg bg-cabana-900">
-            <Waves class="size-4 text-cabana-200" />
+          <div class="grid size-7 place-items-center rounded-lg bg-white/10">
+            <Waves class="size-4 text-primary" />
           </div>
           <span class="font-bold">Cabana</span>
         </div>
-        <span class="ml-auto text-xs font-medium text-muted">{{ route.meta.title }}</span>
+        <span class="ml-auto text-xs font-medium text-muted-foreground">{{ route.meta.title }}</span>
       </header>
 
-      <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <main class="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-6 lg:px-7 lg:py-6">
         <RouterView />
       </main>
     </div>
 
-    <Teleport to="body">
-      <div v-if="menuOpen" class="fixed inset-0 z-50 lg:hidden">
-        <div class="absolute inset-0 bg-cabana-950/40 backdrop-blur-[2px]" @click="menuOpen = false" />
-        <aside class="absolute inset-y-0 left-0 flex w-72 flex-col bg-cabana-950 text-white shadow-2xl">
-          <div class="flex items-center justify-between px-4 pt-4">
-            <span class="text-lg font-bold">Cabana</span>
-            <button class="rounded-lg p-2 text-cabana-200 hover:bg-white/10" aria-label="Close menu" @click="menuOpen = false">
-              <X class="size-5" />
-            </button>
-          </div>
-          <nav class="mt-4 flex-1 space-y-1 px-3">
-            <RouterLink
-              v-for="item in nav"
-              :key="item.name"
-              :to="{ name: item.name }"
-              class="nav-link"
-              :class="{ 'nav-link-active': route.name === item.name }"
-              @click="menuOpen = false"
-            >
-              <component :is="item.icon" class="size-[18px]" />
-              {{ item.label }}
-            </RouterLink>
-          </nav>
-          <div class="border-t border-white/10 p-4 text-sm">
-            <p class="font-semibold">{{ session.user?.username }}</p>
-            <button class="mt-2 inline-flex items-center gap-2 text-cabana-200" @click="logout">
-              <LogOut class="size-4" /> Sign out
-            </button>
-          </div>
-        </aside>
+    <Sheet :open="menuOpen" title="Cabana menu" @close="menuOpen = false">
+      <div class="flex items-center justify-between px-4 pt-4">
+        <span class="text-lg font-bold">Cabana</span>
+        <Button variant="ghost" size="icon-sm" aria-label="Close menu" @click="menuOpen = false">
+          <X class="size-5" />
+        </Button>
       </div>
-    </Teleport>
+      <nav class="mt-4 flex-1 space-y-1 px-3">
+        <RouterLink
+          v-for="item in nav"
+          :key="item.name"
+          :to="{ name: item.name }"
+          class="nav-link"
+          :class="{ 'nav-link-active': route.name === item.name }"
+          @click="menuOpen = false"
+        >
+          <component :is="item.icon" class="size-[18px]" />
+          {{ item.label }}
+        </RouterLink>
+      </nav>
+      <div class="border-t border-white/10 p-4 text-sm">
+        <p class="font-semibold">{{ session.user?.username }}</p>
+        <Button variant="ghost" size="sm" class="mt-2 px-0 text-cabana-200" @click="logout">
+          <LogOut class="size-4" /> Sign out
+        </Button>
+      </div>
+    </Sheet>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
 import {
   Boxes,
@@ -120,11 +120,14 @@ import {
 import { api } from '../lib/api.js';
 import { clearLogin, session } from '../session.js';
 import { toast } from '../lib/toast.js';
+import Avatar from './ui/avatar/Avatar.vue';
+import Button from './ui/button/Button.vue';
+import Sheet from './ui/sheet/Sheet.vue';
 
 const route = useRoute();
 const router = useRouter();
 const menuOpen = ref(false);
-const version = ref('1.0.0');
+const version = ref('1.1.0');
 
 const nav = [
   { name: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -135,7 +138,6 @@ const nav = [
   { name: 'settings', label: 'Settings', icon: Settings },
 ];
 
-const initials = computed(() => (session.user?.username || 'A').slice(0, 2));
 
 async function logout() {
   try {

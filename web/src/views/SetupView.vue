@@ -1,6 +1,6 @@
 <template>
   <AuthFrame>
-    <p class="text-xs font-bold uppercase tracking-[0.18em] text-cabana-600">First run</p>
+    <p class="text-xs font-bold uppercase tracking-[0.18em] text-primary">First run</p>
     <h1 class="mt-2 text-3xl font-bold tracking-tight">Welcome to Cabana</h1>
     <p class="mt-2 text-sm leading-relaxed text-muted">
       Create the one administrator account for this server. There are no default credentials, and setup
@@ -9,11 +9,10 @@
 
     <form class="mt-7 space-y-4" @submit.prevent="submit">
       <div>
-        <label class="label" for="setup-username">Username</label>
-        <input
+        <Label class="label" for="setup-username">Username</Label>
+        <Input
           id="setup-username"
           v-model.trim="username"
-          class="input"
           autocomplete="username"
           placeholder="admin"
           data-testid="setup-username"
@@ -22,11 +21,10 @@
         <p class="mt-1 text-xs text-muted">3–32 characters: letters, numbers, dots, dashes, underscores.</p>
       </div>
       <div>
-        <label class="label" for="setup-password">Password</label>
-        <input
+        <Label class="label" for="setup-password">Password</Label>
+        <Input
           id="setup-password"
           v-model="password"
-          class="input"
           type="password"
           autocomplete="new-password"
           placeholder="At least 8 characters"
@@ -35,11 +33,10 @@
         />
       </div>
       <div>
-        <label class="label" for="setup-confirm">Confirm password</label>
-        <input
+        <Label class="label" for="setup-confirm">Confirm password</Label>
+        <Input
           id="setup-confirm"
           v-model="confirm"
-          class="input"
           type="password"
           autocomplete="new-password"
           data-testid="setup-confirm"
@@ -49,10 +46,10 @@
       <p v-if="error" class="rounded-xl border border-coral-500/30 bg-coral-100 px-3 py-2 text-sm text-coral-500" data-testid="setup-error">
         {{ error }}
       </p>
-      <button class="btn-primary w-full py-2.5" :disabled="loading" data-testid="setup-submit">
+      <Button type="submit" class="w-full py-2.5" :disabled="loading" data-testid="setup-submit">
         <Loader2 v-if="loading" class="size-4 animate-spin" />
         {{ loading ? 'Creating your cabana…' : 'Create administrator' }}
-      </button>
+      </Button>
     </form>
 
     <p class="mt-6 text-xs leading-relaxed text-muted">
@@ -68,6 +65,9 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Loader2 } from 'lucide-vue-next';
 import AuthFrame from '../components/AuthFrame.vue';
+import Button from '../components/ui/button/Button.vue';
+import Input from '../components/ui/input/Input.vue';
+import Label from '../components/ui/label/Label.vue';
 import { api } from '../lib/api.js';
 import { acceptLogin } from '../session.js';
 

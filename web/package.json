@@ -1,6 +1,6 @@
 {
   "name": "cabana-web",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
     "lucide-vue-next": "1.0.0",
+    "reka-ui": "2.11.0",
+    "tailwind-merge": "3.7.0",
     "vue": "3.5.45",
     "vue-router": "4.6.4"
   },

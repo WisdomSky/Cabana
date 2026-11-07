@@ -33,7 +33,9 @@ tar --owner=0 --group=0 --numeric-owner -czf "${RELEASE_DIR}/cabana-app.tar.gz" 
   sha256sum cabana-app.tar.gz > cabana-app.tar.gz.sha256
 )
 cp installer/install.sh "${RELEASE_DIR}/install.sh"
-chmod 0755 "${RELEASE_DIR}/install.sh"
+cp installer/uninstall.sh "${RELEASE_DIR}/uninstall.sh"
+chmod 0755 "${RELEASE_DIR}/install.sh" "${RELEASE_DIR}/uninstall.sh"
 
 echo "Artifacts:"
-ls -lh "${RELEASE_DIR}/cabana-app.tar.gz" "${RELEASE_DIR}/cabana-app.tar.gz.sha256" "${RELEASE_DIR}/install.sh"
+ls -lh "${RELEASE_DIR}/cabana-app.tar.gz" "${RELEASE_DIR}/cabana-app.tar.gz.sha256" \
+  "${RELEASE_DIR}/install.sh" "${RELEASE_DIR}/uninstall.sh"
