@@ -229,6 +229,12 @@ node_compatible() {
 }
 
 NODE_BIN=""
+# Node's official Linux binaries dynamically link libatomic on arm64.
+if ! dpkg -s libatomic1 >/dev/null 2>&1 || ! command -v xz >/dev/null 2>&1; then
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get update -o DPkg::Lock::Timeout=120 >/dev/null
+  apt-get install -y -o DPkg::Lock::Timeout=120 ca-certificates curl xz-utils libatomic1 >/dev/null
+fi
 if [ -x "$NODE_DIR/bin/node" ] && node_compatible "$NODE_DIR/bin/node"; then
   NODE_BIN="$NODE_DIR/bin/node"
   log "Reusing Cabana's existing Node.js $("$NODE_BIN" --version)."
