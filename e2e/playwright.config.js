@@ -4,7 +4,7 @@ const baseURL = process.env.CABANA_E2E_BASE_URL || 'http://127.0.0.1:8088';
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: process.env.CABANA_E2E_SMOKE ? /smoke\.spec\.js/ : /^\d{2}-.*\.spec\.js$/,
+  testMatch: process.env.CABANA_E2E_SMOKE ? '**/smoke.spec.js' : '**/[0-9][0-9]-*.spec.js',
   fullyParallel: false,
   workers: 1,
   timeout: 180_000,
