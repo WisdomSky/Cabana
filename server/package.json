@@ -1,6 +1,6 @@
 {
   "name": "cabana-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "main": "src/start.js",
@@ -13,9 +13,9 @@
     "test:docker": "CABANA_REAL_DOCKER=1 node --test test/*.test.js"
   },
   "dependencies": {
-    "express": "4.21.2",
-    "multer": "2.0.2",
-    "yaml": "2.8.1"
+    "express": "4.22.3",
+    "multer": "2.5.0",
+    "yaml": "2.9.1"
   },
   "devDependencies": {
     "esbuild": "0.25.10",

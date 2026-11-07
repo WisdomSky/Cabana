@@ -1,7 +1,8 @@
-# Cabana v1.0.0
+# Cabana v1.0.1
 
-Cabana is an independent, CasaOS-style personal cloud server for Debian 12 and Ubuntu 24.04
-on amd64 and arm64.
+Cabana v1.0.1 is a security-maintenance patch for v1.0.0 (updated Express, Multer, and YAML
+dependencies; no API changes). It is an independent, CasaOS-style personal cloud server for
+Debian 12 and Ubuntu 24.04 on amd64 and arm64.
 
 ## Install
 

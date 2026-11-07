@@ -1,7 +1,7 @@
 # Cabana verification
 
 This document records the exact environments, commands, versions, timestamps, and outcomes
-used for Cabana v1.0.0. Anything not run is explicitly marked as not run; a partial run is
+used for Cabana v1.0.1 (with v1.0.0 evidence retained where noted). Anything not run is explicitly marked as not run; a partial run is
 never reported as passed.
 
 ## Status summary

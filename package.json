@@ -1,6 +1,6 @@
 {
   "name": "cabana",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Cabana - an independent CasaOS-style personal cloud server for home Linux machines",
   "license": "MIT",
