@@ -166,7 +166,8 @@ test('store API lists, filters, details, refreshes and proxies assets', async (t
 
   let res = await agent.get('/api/store');
   assert.equal(res.status, 200);
-  assert.equal(res.body.total, 1);
+  const hostArch = process.arch === 'x64' ? 'amd64' : process.arch;
+  assert.equal(res.body.total, hostArch === 'amd64' ? 2 : 1);
   assert.ok(res.body.categories.some((c) => c.id === 'networking'));
   assert.equal(res.body.hostArch, process.arch === 'x64' ? 'amd64' : process.arch);
 
